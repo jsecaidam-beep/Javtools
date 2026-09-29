@@ -1,0 +1,8 @@
+{
+  "name": "Remix Generador ACH - Tablas y Gráficas Humanitarias",
+  "description": "Generador profesional interactivo de tablas y gráficas con identidad visual de Acción contra el Hambre (ACH), análisis multimodal con Gemini y exportación optimizada para Word.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

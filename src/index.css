@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --color-ach-blue: #005FB6;
+    --color-ach-green: #52AE32;
+    --color-ach-orange: #EE7203;
+    --color-ach-gray: #707070;
+    --color-ach-blue-dark: #003e7e;
+    --color-ach-blue-light: #e8f2fc;
+    --color-ach-green-light: #eff9eb;
+    --color-ach-orange-light: #fef4ea;
+    --font-ach: 'Futura', 'Futura PT', 'Century Gothic', 'Trebuchet MS', 'Jost', Arial, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-ach);
+    background-color: #0b1329;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+
+  * {
+    font-family: inherit;
+  }
+}
+
+/* Glassmorphism Styles */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.glass-input {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.glass-input:focus {
+  border-color: #005FB6;
+  box-shadow: 0 0 0 2px rgba(0, 95, 182, 0.3);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 95, 182, 0.5);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 95, 182, 0.8);
+}
+
+/* Editable Cell outline on focus */
+[contenteditable="true"]:focus {
+  outline: 2px solid #005FB6 !important;
+  outline-offset: -2px;
+  background-color: rgba(0, 95, 182, 0.1) !important;
+}
+
+/* Multimodal paste dropzone glow */
+.dropzone-active {
+  border-color: #52AE32 !important;
+  background-color: rgba(82, 174, 50, 0.08) !important;
+}
