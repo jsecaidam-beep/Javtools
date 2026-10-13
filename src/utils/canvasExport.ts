@@ -82,6 +82,9 @@ async function renderElement(element: HTMLElement, options?: ExportPngOptions): 
     logging: false,
     imageTimeout: 15000,
     onclone: async (_doc, clone) => {
+      // Preview zoom is for the editor only; capture the full page at 1:1.
+      const preview = clone.closest<HTMLElement>('[data-preview-transform]');
+      if (preview) preview.style.transform = 'none';
       clone.style.width = `${width}px`;
       clone.style.minWidth = `${width}px`;
       clone.style.maxWidth = `${width}px`;

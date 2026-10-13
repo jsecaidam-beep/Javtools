@@ -1,3 +1,4 @@
+import { PagePreview } from './PagePreview';
 import { PAGE_FORMATS, PAGE_WIDTH } from '../constants/pageFormats';
 import { PageFormatSelector } from './PageFormatSelector';
 import React, { useState, useRef } from 'react';
@@ -940,7 +941,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
           )}
         </div>
 
-        {/* Live A4 Rendered Container */}
+        {/* Live page preview */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center">
           <div className="text-[11px] text-slate-400 mb-2 flex flex-wrap items-center justify-between w-full max-w-[510px] gap-2">
             <div className="flex items-center gap-2">
@@ -988,13 +989,14 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             </div>
           </div>
 
-          {/* Physical Container */}
+          <PagePreview format={creditsData.pageFormat || 'carta'}>
+          {/* Sized Container */}
           <div
             ref={creditsCanvasRef}
             data-export-height={PAGE_FORMATS[creditsData.pageFormat || 'carta'].height}
             data-export-surface
             data-export-width={PAGE_WIDTH}
-            className="w-full max-w-[510px] shadow-2xl rounded-sm overflow-hidden border border-slate-700 relative flex flex-col justify-between  p-4 sm:p-5 select-none transition-all duration-300"
+            className="w-[510px] overflow-hidden relative flex flex-col justify-between  p-5 select-none"
             style={{
               background:
                 creditsData.bgTheme === 'custom'
@@ -1009,7 +1011,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                   ? '#FFFFFF'
                   : 'linear-gradient(145deg, #005FB6 0%, #004A8F 50%, #003366 100%)',
               color: creditsData.bgTheme === 'pure-white' ? '#0F172A' : '#FFFFFF',
-              aspectRatio: `${PAGE_WIDTH} / ${PAGE_FORMATS[creditsData.pageFormat || 'carta'].height}`,
+              width: PAGE_WIDTH, height: PAGE_FORMATS[creditsData.pageFormat || 'carta'].height,
             }}
           >
             {/* Ambient Watermark vector silhouettes */}
@@ -1027,13 +1029,13 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             {/* Top Banner Block */}
             <div className="relative z-10 text-center flex flex-col items-center gap-1.5 pt-2">
               <h2
-                className="text-lg sm:text-xl font-black tracking-wider uppercase font-futura"
+                className="text-xl font-black tracking-wider uppercase font-futura"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#005FB6' : '#FFFFFF' }}
               >
                 {creditsData.topBanner}
               </h2>
               <div
-                className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide font-futura whitespace-pre-line leading-snug max-w-sm opacity-95"
+                className="text-[11px] font-bold uppercase tracking-wide font-futura whitespace-pre-line leading-snug max-w-sm opacity-95"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#334155' : 'rgba(255,255,255,0.95)' }}
               >
                 {creditsData.subBanner}
@@ -1053,11 +1055,11 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                       ? 'color'
                       : 'white'
                   }
-                  className="h-9 sm:h-10 w-auto"
+                  className="h-10 w-auto"
                 />
               </div>
               <div
-                className="text-[10px] sm:text-[11px] font-semibold font-futura whitespace-pre-line max-w-md pt-1 opacity-90"
+                className="text-[11px] font-semibold font-futura whitespace-pre-line max-w-md pt-1 opacity-90"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#475569' : '#FFFFFF' }}
               >
                 {creditsData.missionSubtitle}
@@ -1077,7 +1079,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
               >
                 {/* Section Title */}
                 <div
-                  className="font-black text-[10px] sm:text-[11px] tracking-wider uppercase font-futura text-center mb-1.5 pb-1 border-b"
+                  className="font-black text-[11px] tracking-wider uppercase font-futura text-center mb-1.5 pb-1 border-b"
                   style={{
                     borderColor: creditsData.bgTheme === 'pure-white' ? 'rgba(0, 95, 182, 0.2)' : 'rgba(255, 255, 255, 0.2)',
                     color: creditsData.bgTheme === 'pure-white' ? '#005FB6' : '#FFFFFF',
@@ -1103,7 +1105,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                       }}
                     >
                       <div
-                        className="font-bold text-[10px] sm:text-[11px] leading-tight font-futura"
+                        className="font-bold text-[11px] leading-tight font-futura"
                         style={{
                           color: creditsData.bgTheme === 'pure-white' ? '#0F172A' : '#FFFFFF',
                         }}
@@ -1112,7 +1114,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                       </div>
                       {person.role && (
                         <div
-                          className="text-[9px] sm:text-[9.5px] font-roboto leading-snug mt-0.5 opacity-90"
+                          className="text-[9.5px] font-roboto leading-snug mt-0.5 opacity-90"
                           style={{
                             color: creditsData.bgTheme === 'pure-white' ? '#475569' : '#E2E8F0',
                           }}
@@ -1140,7 +1142,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
 
             {/* Bottom Section: Address Columns + PQR + Website */}
             <div
-              className="relative z-10 flex flex-col gap-2 text-[9px] sm:text-[10px] font-roboto border-t pt-3"
+              className="relative z-10 flex flex-col gap-2 text-[10px] font-roboto border-t pt-3"
               style={{
                 borderColor:
                   creditsData.bgTheme === 'pure-white' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)',
@@ -1157,7 +1159,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                     <span>{creditsData.officeGuatemalaTitle || 'Oficina Nacional Guatemala'}</span>
                   </div>
                   <div
-                    className="whitespace-pre-line leading-tight opacity-85 text-[10px] sm:text-[11px]"
+                    className="whitespace-pre-line leading-tight opacity-85 text-[11px]"
                     style={{ color: creditsData.bgTheme === 'pure-white' ? '#334155' : '#FFFFFF' }}
                   >
                     {creditsData.officeGuatemalaAddress}
@@ -1173,7 +1175,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                     <span>{creditsData.officeHondurasTitle || 'Oficina Nacional Honduras'}</span>
                   </div>
                   <div
-                    className="whitespace-pre-line leading-tight opacity-85 text-[10px] sm:text-[11px]"
+                    className="whitespace-pre-line leading-tight opacity-85 text-[11px]"
                     style={{ color: creditsData.bgTheme === 'pure-white' ? '#334155' : '#FFFFFF' }}
                   >
                     {creditsData.officeHondurasAddress}
@@ -1253,7 +1255,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                 }}
               >
                 <span
-                  className="font-extrabold text-[10px] sm:text-[11px] tracking-wider font-futura"
+                  className="font-extrabold text-[11px] tracking-wider font-futura"
                   style={{ color: creditsData.bgTheme === 'pure-white' ? '#52AE32' : '#FFFFFF' }}
                 >
                   {creditsData.webUrl}
@@ -1261,6 +1263,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
               </div>
             </div>
           </div>
+          </PagePreview>
         </div>
       </div>
     </div>

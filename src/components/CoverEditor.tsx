@@ -1,3 +1,4 @@
+import { PagePreview } from './PagePreview';
 import { PAGE_FORMATS, PAGE_WIDTH } from '../constants/pageFormats';
 import { PageFormatSelector } from './PageFormatSelector';
 import React, { useState, useRef } from 'react';
@@ -1164,7 +1165,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
           )}
         </div>
 
-        {/* Live A4 Canvas Preview (Right Column) */}
+        {/* Live page preview (Right Column) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center">
           <div className="text-[11px] text-slate-400 mb-2 flex items-center gap-2">
             <span>Previsualización en tiempo real ({PAGE_FORMATS[coverData.pageFormat || 'carta'].label})</span>
@@ -1172,14 +1173,15 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
             <span className="text-emerald-400 font-semibold">Listo para Word</span>
           </div>
 
-          {/* The Physical A4 Rendered Container */}
+          <PagePreview format={coverData.pageFormat || 'carta'}>
+          {/* The Sized Rendered Container */}
           <div
             ref={coverCanvasRef}
             data-export-height={PAGE_FORMATS[coverData.pageFormat || 'carta'].height}
             data-export-surface
             data-export-width={PAGE_WIDTH}
-            className="w-full max-w-[510px] bg-white text-slate-900 shadow-2xl rounded-sm overflow-hidden border border-slate-300 relative flex flex-col "
-            style={{ aspectRatio: `${PAGE_WIDTH} / ${PAGE_FORMATS[coverData.pageFormat || 'carta'].height}` }}
+            className="w-[510px] bg-white text-slate-900 overflow-hidden relative flex flex-col "
+            style={{ width: PAGE_WIDTH, height: PAGE_FORMATS[coverData.pageFormat || 'carta'].height }}
           >
             {/* STYLE 1: INFORME DE MONITOREO (Screenshot 1 Reference) */}
             {coverData.style === 'monitoring' ? (
@@ -1243,19 +1245,19 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
                   {/* White Pill Banner */}
                   {coverData.showCategoryPill !== false && coverData.categoryPill && (
-                    <div className="bg-white text-[#52AE32] px-3.5 py-1 rounded-sm text-[11px] sm:text-xs font-bold tracking-wider uppercase font-futura text-center shadow-sm w-full my-1">
+                    <div className="bg-white text-[#52AE32] px-3.5 py-1 rounded-sm text-xs font-bold tracking-wider uppercase font-futura text-center shadow-sm w-full my-1">
                       {coverData.categoryPill}
                     </div>
                   )}
 
                   {/* Big Futura Title */}
-                  <h1 className="text-lg sm:text-xl font-extrabold tracking-tight uppercase text-center leading-snug font-futura py-1">
+                  <h1 className="text-xl font-extrabold tracking-tight uppercase text-center leading-snug font-futura py-1">
                     {coverData.title}
                   </h1>
 
                   {/* Subtitle in Style 1 (if enabled) */}
                   {coverData.showSubtitle !== false && coverData.subtitle && (
-                    <p className="opacity-90 text-[11px] sm:text-xs text-center font-roboto italic px-2 leading-relaxed pb-1">
+                    <p className="opacity-90 text-xs text-center font-roboto italic px-2 leading-relaxed pb-1">
                       {coverData.subtitle}
                     </p>
                   )}
@@ -1265,7 +1267,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                     (coverData.showInternalCode !== false && coverData.internalCode) ||
                     (coverData.showLocation !== false && coverData.location) ||
                     (coverData.showDate !== false && coverData.date)) && (
-                    <div className="opacity-90 text-[10px] sm:text-[11px] space-y-0.5 pt-1 font-roboto border-t border-white/15">
+                    <div className="opacity-90 text-[11px] space-y-0.5 pt-1 font-roboto border-t border-white/15">
                       {coverData.showProjectCode !== false && coverData.projectCode && (
                         <div>
                           <strong>Proyecto:</strong> {coverData.projectCode}
@@ -1313,19 +1315,19 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
                 {/* Bottom Section: Solid Green Bar (#52AE32) with author */}
                 {coverData.showAuthorBlock !== false && (coverData.authorName || coverData.authorRole || coverData.authorBase) && (
-                  <div className="bg-[#52AE32] text-white p-3 text-center font-roboto">
+                  <div data-page-author className="bg-[#52AE32] text-white p-3 text-center font-roboto shrink-0">
                     {coverData.authorName && (
-                      <div className="font-bold text-xs sm:text-sm font-futura">
+                      <div className="font-bold text-sm font-futura">
                         {coverData.authorName}
                       </div>
                     )}
                     {coverData.authorRole && (
-                      <div className="italic text-[10px] sm:text-[11px] opacity-90">
+                      <div className="italic text-[11px] opacity-90">
                         {coverData.authorRole}
                       </div>
                     )}
                     {coverData.authorBase && (
-                      <div className="font-semibold text-[10px] sm:text-[11px]">
+                      <div className="font-semibold text-[11px]">
                         {coverData.authorBase}
                       </div>
                     )}
@@ -1356,7 +1358,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                         {coverData.categoryPill}
                       </div>
                     )}
-                    <h1 className="text-base sm:text-lg font-black tracking-tight uppercase leading-snug font-futura">
+                    <h1 className="text-lg font-black tracking-tight uppercase leading-snug font-futura">
                       {coverData.title}
                     </h1>
                   </div>
@@ -1366,7 +1368,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                 <div className="h-[45%] p-6 flex flex-col justify-between">
                   <div className="space-y-3">
                     {coverData.showSubtitle !== false && coverData.subtitle && (
-                      <p className="text-xs sm:text-sm text-[#005FB6] font-semibold leading-relaxed font-roboto">
+                      <p className="text-sm text-[#005FB6] font-semibold leading-relaxed font-roboto">
                         {coverData.subtitle}
                       </p>
                     )}
@@ -1438,6 +1440,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
               </div>
             )}
           </div>
+          </PagePreview>
         </div>
       </div>
     </div>

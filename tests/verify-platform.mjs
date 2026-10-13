@@ -134,13 +134,42 @@ try {
     assert.equal(json.data.projectCode, undefined);
     assert.equal(json.data.authorName, undefined);
   });
-  await check('mobile page format and export stay identical', async () => {
+  await check('mobile previews show complete Carta and Oficio layouts without cropping', async () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await navigate('Portadas');
-    await page.getByRole('combobox', { name: 'Tamaño de hoja' }).selectOption('carta');
-    await download('cover-mobile', 'Descargar PNG', 2550, 3300);
+    await page.getByRole('button', { name: /1. Informe de Monitoreo/ }).click();
+    for (const format of ['carta', 'oficio']) {
+      await page.getByRole('combobox', { name: 'Tamaño de hoja' }).selectOption(format);
+      const layout = await page.locator('[data-export-surface]').evaluate(element => {
+        const page = element.getBoundingClientRect();
+        const author = element.querySelector('[data-page-author]').getBoundingClientRect();
+        const frame = element.closest('[data-page-preview]').getBoundingClientRect();
+        return { page: { width: page.width, height: page.height, bottom: page.bottom }, author: { height: author.height, bottom: author.bottom }, frame: { width: frame.width, height: frame.height }, scroll: element.scrollHeight, height: element.clientHeight };
+      });
+      assert(Math.abs(layout.page.width / layout.page.height - 8.5 / (format === 'carta' ? 11 : 13)) < 0.001);
+      assert(Math.abs(layout.frame.height - layout.page.height) < 1);
+      assert(layout.author.bottom <= layout.page.bottom + 1, 'Author band is cropped');
+      assert(layout.author.height > 20, 'Author band disappeared');
+      assert(layout.scroll <= layout.height + 1, 'Document content exceeds the page');
+      await download(`cover-mobile-${format}`, 'Descargar PNG', 2550, format === 'carta' ? 3300 : 3900);
+      await page.locator('[data-page-preview]').screenshot({ path: `${output}/preview-mobile-${format}.png` });
+    }
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     await page.screenshot({ path: `${output}/mobile.png`, fullPage: true });
+  });
+  await check('editorial and credits previews retain the selected page ratio on mobile', async () => {
+    await page.getByRole('button', { name: /2. Guía Editorial/ }).click();
+    for (const format of ['carta', 'oficio']) {
+      await page.getByRole('combobox', { name: 'Tamaño de hoja' }).selectOption(format);
+      await download(`editorial-mobile-${format}`, 'Descargar PNG', 2550, format === 'carta' ? 3300 : 3900);
+    }
+    await navigate('Créditos');
+    for (const format of ['carta', 'oficio']) {
+      await page.getByRole('combobox', { name: 'Tamaño de hoja' }).selectOption(format);
+      const box = await page.locator('[data-export-surface]').boundingBox();
+      assert(Math.abs(box.width / box.height - 8.5 / (format === 'carta' ? 11 : 13)) < 0.001);
+      await download(`credits-mobile-${format}`, 'Descargar PNG', 2550, format === 'carta' ? 3300 : 3900);
+    }
   });
   await check('no unhandled client errors', async () => assert.deepEqual(errors, []));
 } finally {
