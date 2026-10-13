@@ -18,20 +18,56 @@ export async function urlToBase64(url: string): Promise<string> {
   });
 }
 
+/** Use load events instead of decode(), which can reject usable images in WebKit. */
+function waitForImage(image: HTMLImageElement): Promise<void> {
+  if (image.complete) {
+    return image.naturalWidth > 0 ? Promise.resolve() : Promise.reject(new Error('Imagen no disponible'));
+  }
+  return new Promise((resolve, reject) => {
+    const cleanup = () => {
+      clearTimeout(timeout);
+      image.removeEventListener('load', onLoad);
+      image.removeEventListener('error', onError);
+    };
+    const onLoad = () => { cleanup(); resolve(); };
+    const onError = () => { cleanup(); reject(new Error('Imagen no disponible')); };
+    const timeout = setTimeout(() => { cleanup(); reject(new Error('La imagen tarda demasiado en cargar')); }, 15000);
+    image.addEventListener('load', onLoad);
+    image.addEventListener('error', onError);
+  });
+}
+
+async function inlineLoadedImage(image: HTMLImageElement): Promise<string> {
+  await waitForImage(image);
+  try {
+    // Capture the pixels already displayed. No second HTTP request is needed.
+    const canvas = document.createElement('canvas');
+    const scale = Math.min(1, 3200 / Math.max(image.naturalWidth, image.naturalHeight));
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('No se pudo preparar la imagen');
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    const source = canvas.toDataURL('image/png');
+    if (source === 'data:,') throw new Error('No se pudo preparar la imagen');
+    return source;
+  } catch {
+    // A remote image without canvas access may still allow a CORS fetch.
+    return urlToBase64(image.currentSrc || image.src);
+  }
+}
+
 async function renderElement(element: HTMLElement, options?: ExportPngOptions): Promise<HTMLCanvasElement> {
   if (!element) throw new Error('No se encontró el documento para exportar.');
   await document.fonts.ready;
-  // Inline remote images in the clone only. Never change images in the editor.
+  // Reuse loaded image pixels, including uploaded logos and bundled photos.
   const images = Array.from(element.querySelectorAll('img'));
   const imageSources = await Promise.all(images.map(async (img) => {
     try {
-      const source = await urlToBase64(img.currentSrc || img.src);
-      const decoded = new Image();
-      decoded.src = source;
-      await decoded.decode();
-      return source;
+      return await inlineLoadedImage(img);
     } catch {
-      throw new Error('No se pudo cargar una foto o logo. Súbelo desde tu equipo y vuelve a descargar.');
+      const label = img.alt?.trim() || 'Imagen del documento';
+      throw new Error(`No se pudo preparar «${label}». Comprueba que esa imagen se vea en la portada o reemplázala desde Foto/Logos.`);
     }
   }));
   const width = Number(element.dataset.exportWidth) || element.offsetWidth;
@@ -59,7 +95,7 @@ async function renderElement(element: HTMLElement, options?: ExportPngOptions): 
       await Promise.all(clonedImages.map(async (img, i) => {
         img.removeAttribute('crossorigin');
         img.src = imageSources[i];
-        await img.decode();
+        await waitForImage(img);
       }));
       // Turn off editing transitions in the cloned artwork.
       [clone, ...Array.from(clone.querySelectorAll<HTMLElement>('*'))].forEach(el => {

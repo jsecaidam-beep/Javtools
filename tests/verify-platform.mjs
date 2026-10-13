@@ -53,6 +53,33 @@ try {
       await download(`cover-${format}`, 'Descargar PNG', 2550, format === 'carta' ? 3300 : 3900);
     });
   }
+  await check('loaded photos export without refetching or relying on Image.decode', async () => {
+    await page.locator('[data-export-surface] img').evaluate(image => {
+      if (!image.complete || !image.naturalWidth) throw new Error('Test image is not loaded');
+    });
+    await page.evaluate(() => {
+      window.savedImageFetch = window.fetch;
+      window.savedImageDecode = HTMLImageElement.prototype.decode;
+      window.imageFetchCount = 0;
+      window.fetch = (...args) => {
+        if (String(args[0]).includes('/images/')) {
+          window.imageFetchCount++;
+          return Promise.reject(new Error('Image refetch blocked in regression test'));
+        }
+        return window.savedImageFetch(...args);
+      };
+      HTMLImageElement.prototype.decode = () => Promise.reject(new Error('WebKit decode rejection'));
+    });
+    try {
+      await download('cover-cached-image', 'Descargar PNG', 2550, 3900);
+      assert.equal(await page.evaluate(() => window.imageFetchCount), 0);
+    } finally {
+      await page.evaluate(() => {
+        window.fetch = window.savedImageFetch;
+        HTMLImageElement.prototype.decode = window.savedImageDecode;
+      });
+    }
+  });
   await check('cover editorial template', async () => {
     await page.getByRole('button', { name: /2. Guía Editorial/ }).click();
     await download('cover-editorial', 'Descargar PNG', 2550, 3900);
