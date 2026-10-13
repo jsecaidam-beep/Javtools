@@ -129,7 +129,8 @@ export function generateWordTableHtml(tableData: TableData): string {
 
       // If it's a progress bar
       if (cell.isProgressBar) {
-        const percent = Math.min(100, Math.max(0, cell.progressPercent ?? parseInt(cell.value) ?? 50));
+        const rawPercent = cell.progressPercent ?? parseFloat(cell.value);
+        const percent = Number.isFinite(rawPercent) ? Math.min(100, Math.max(0, rawPercent)) : 0;
         const barColor = badge === 'orange' ? '#EE7203' : badge === 'green' ? '#52AE32' : badge === 'yellow' ? '#FFF200' : '#005FB6';
         cellContent = `
           <div style="font-size: 8pt; font-weight: bold; color: #1e293b; margin-bottom: 2px;">${escapeHtml(cell.value)}</div>

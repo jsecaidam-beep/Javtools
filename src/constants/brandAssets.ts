@@ -34,32 +34,32 @@ export const AVAILABLE_PARTNER_LOGOS: LogoItem[] = [
   { id: 'logo-trocaire', name: 'Trócaire', type: 'partner' },
 ];
 
-// Curated authentic humanitarian photography assets (Unsplash CDN with verified humanitarian & nutrition themes)
+// Illustrative stock photos bundled locally; replace with authorized project photography.
 export const PRELOADED_COVER_PHOTOS = [
   {
     id: 'photo-field-transfer',
-    title: 'Entrega de transferencias y monitoreo en comunidad',
-    url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1200&q=80',
+    title: 'Reforestación y resiliencia climática (ejemplo)',
+    url: `${import.meta.env.BASE_URL}images/field.jpg`,
   },
   {
     id: 'photo-mother-child',
-    title: 'Madre e infante en consulta de nutrición',
-    url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1200&q=80',
+    title: 'Personas y comunidad (foto de ejemplo)',
+    url: `${import.meta.env.BASE_URL}images/mother-child.jpg`,
   },
   {
     id: 'photo-community-water',
-    title: 'Acceso a agua potable y saneamiento rural',
-    url: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&w=1200&q=80',
+    title: 'Acción comunitaria (foto de ejemplo)',
+    url: `${import.meta.env.BASE_URL}images/community-water.jpg`,
   },
   {
     id: 'photo-agriculture',
-    title: 'Agricultura familiar y resiliencia climática',
-    url: 'https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1200&q=80',
+    title: 'Agricultura y resiliencia (foto de ejemplo)',
+    url: `${import.meta.env.BASE_URL}images/agriculture.jpg`,
   },
   {
     id: 'photo-children',
-    title: 'Niñez y seguridad nutricional',
-    url: 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?auto=format&fit=crop&w=1200&q=80',
+    title: 'Niñez (foto de ejemplo)',
+    url: `${import.meta.env.BASE_URL}images/children.jpg`,
   },
 ];
 

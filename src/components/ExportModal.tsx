@@ -1,3 +1,4 @@
+import { downloadBlob } from '../utils/canvasExport';
 import React, { useState } from 'react';
 import { X, Copy, Download, Check, FileCode } from 'lucide-react';
 import { TableData } from '../types/table';
@@ -37,12 +38,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ tableData, isOpen, onC
 
   const handleDownload = () => {
     const blob = new Blob([standaloneHtml], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `tabla-ach-${tableData.title.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'autocontenida'}.html`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(blob, `tabla-ach-${tableData.title.toLowerCase().replace(/[^a-z0-9]/g, '-') || 'autocontenida'}.html`);
   };
 
   return (

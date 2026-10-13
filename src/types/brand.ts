@@ -1,3 +1,5 @@
+import { PageFormat } from '../constants/pageFormats';
+
 export interface LogoItem {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ export type CoverBgColor = 'blue' | 'green' | 'orange' | 'darkBlue' | 'white' | 
 export type CreditsBgColor = 'gradient-blue' | 'gradient-green' | 'gradient-orange' | 'dark-slate' | 'pure-white' | 'custom';
 
 export interface CoverData {
+  pageFormat?: PageFormat;
   style: CoverStyle;
   categoryPill: string;
   title: string;
@@ -50,6 +53,7 @@ export interface TeamContributor {
 }
 
 export interface CreditsData {
+  pageFormat?: PageFormat;
   topBanner: string;
   subBanner: string;
   mainTitle: string;

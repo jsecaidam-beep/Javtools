@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: 'Jost'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('@fontsource-variable/jost/files/jost-latin-wght-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Roboto'; font-style: normal; font-weight: 100 900; font-display: swap;
+  src: url('@fontsource-variable/roboto/files/roboto-latin-wght-normal.woff2') format('woff2');
+}
+
+
 @layer base {
   :root {
     --color-ach-blue: #005FB6;
@@ -15,8 +25,8 @@
 
   body {
     font-family: var(--font-ach);
-    background-color: #0b1329;
-    color: #e2e8f0;
+    background-color: #f3f7fa;
+    color: #243746;
     overflow-x: hidden;
   }
 
@@ -81,3 +91,24 @@
   border-color: #52AE32 !important;
   background-color: rgba(82, 174, 50, 0.08) !important;
 }
+
+/* Interface styles are deliberately excluded from document artwork. */
+.ach-app .glass-panel { background: #fff; border-color: #dce5eb; backdrop-filter: none; box-shadow: 0 4px 18px rgb(0 62 126 / 5%); }
+.ach-app header.glass-panel { border-top: 5px solid #52AE32; border-bottom: 1px solid #dce5eb; }
+.ach-app :is([class*="bg-slate-"], .glass-input):not([data-export-surface], [data-export-surface] *) { background: #f1f5f8; }
+.ach-app :is([class*="border-slate-"], [class*="border-white/"]):not([data-export-surface], [data-export-surface] *) { border-color: #dce5eb; }
+.ach-app :is([class*="text-slate-"], input, textarea, select):not([data-export-surface], [data-export-surface] *) { color: #374c5e; }
+.ach-app :is(h1, h2, h3, h4, label):not([data-export-surface], [data-export-surface] *) { color: #003e7e; }
+.ach-app :is(div, span, p)[class~="text-white"]:not([data-export-surface], [data-export-surface] *) { color: #243746; }
+.ach-app :is([class*="text-sky-"], [class*="text-emerald-"], [class*="text-amber-"]):not([data-export-surface], [data-export-surface] *) { color: #005FB6; }
+.ach-app .ach-hero { background: #005FB6; border: none; border-left: 8px solid #52AE32; }
+.ach-app .ach-hero :is(h1, p, span, div) { color: #fff; }
+.ach-app .ach-hero svg { color: #fff; }
+.ach-app :is(input, textarea, select):focus-visible { outline: 2px solid #005FB6; outline-offset: 2px; }
+.ach-app button:focus-visible { outline: 3px solid #005FB6; outline-offset: 3px; }
+[data-export-surface] { flex-shrink: 0; }
+
+.ach-app .ach-hero :is(h1, p, span, div) { color: #fff !important; }
+.ach-app :is([class*="bg-sky-950"], [class*="bg-emerald-950"], [class*="bg-orange-950"]):not([data-export-surface], [data-export-surface] *) { background: #e8f2fc; }
+.ach-app button:is([class*="bg-slate-"], [class*="bg-[#005FB6]/"], [class*="bg-[#52AE32]/"]):not([data-export-surface] *) { color: #003e7e; }
+.ach-app button[class~="text-white"] span { color: inherit; }

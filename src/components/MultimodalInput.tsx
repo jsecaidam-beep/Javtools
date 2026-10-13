@@ -1,3 +1,4 @@
+import { parseDelimitedText, parseNumericValue } from '../utils/tabularData';
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Sparkles,
@@ -128,7 +129,7 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
 
               const el = td as HTMLTableCellElement;
               const val = td.textContent?.trim() || '';
-              const isNum = !isNaN(Number(val.replace(/[^0-9.-]+/g, ''))) && val.length > 0 && !val.includes('/');
+              const isNum = Number.isFinite(parseNumericValue(val)) && val.length > 0 && !val.includes('/');
               const isPct = val.endsWith('%');
 
               const bg = el.style?.backgroundColor || el.getAttribute('bgcolor') || undefined;
@@ -144,7 +145,7 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
               grid[rIdx][colIdx] = {
                 id: `c-${rIdx}-${colIdx}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
                 value: val,
-                align: (isNum ? 'right' : isPct ? 'center' : 'left') as CellAlign,
+                align: (isPct ? 'center' : isNum ? 'right' : 'left') as CellAlign,
                 badgeColor: 'none',
                 bgColor: bg,
                 textColor: fg,
@@ -235,7 +236,7 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
       if (lines.length > 0) {
         const delimiter = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : lines[0].includes(',') ? ',' : null;
         if (delimiter) {
-          const rawLines = lines.map((l) => l.split(delimiter).map((c) => c.trim()));
+          const rawLines = parseDelimitedText(text);
           const maxCols = Math.max(...rawLines.map((r) => r.length), 1);
 
           let detectedTitle = 'Tabla de Datos Humanitarios';
@@ -259,13 +260,13 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
           const rows: TableRow[] = dataLines.map((values, rIdx) => {
             const cells: TableCell[] = safeHeaders.map((_, cIdx) => {
               const val = values[cIdx]?.trim() || '';
-              const isNum = !isNaN(Number(val.replace(/[^0-9.-]+/g, ''))) && val.length > 0 && !val.includes('/');
+              const isNum = Number.isFinite(parseNumericValue(val)) && val.length > 0 && !val.includes('/');
               const isPct = val.endsWith('%');
 
               return {
                 id: `cell-${rIdx}-${cIdx}-${Date.now()}`,
                 value: val,
-                align: (isNum ? 'right' : isPct ? 'center' : 'left') as CellAlign,
+                align: (isPct ? 'center' : isNum ? 'right' : 'left') as CellAlign,
                 badgeColor: 'none',
               };
             });
@@ -424,6 +425,9 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
         }),
       });
 
+      if (!response.headers.get('content-type')?.includes('application/json')) {
+        throw new Error('El servicio de IA no está disponible. Puedes usar la tabla pegada directamente.');
+      }
       const resData = await response.json();
 
       if (!response.ok || !resData.success) {
@@ -481,6 +485,8 @@ export const MultimodalInput: React.FC<MultimodalInputProps> = ({ onTableGenerat
       if (detectedTable) {
         setErrorMessage('La IA experimenta una demora temporal. Puedes hacer clic en "Usar Tabla Pegada Directa" abajo para continuar sin interrupciones.');
       } else {
+        const localTable = parseClipboardContent(pastedHtml, pastedText);
+        if (localTable && !pastedImageBase64) { onTableGenerated(localTable); clearAll(); return; }
         setErrorMessage(err.message || 'No se pudo estructurar con Gemini. Puedes reintentar o pegar directamente desde Excel/Word.');
       }
     } finally {

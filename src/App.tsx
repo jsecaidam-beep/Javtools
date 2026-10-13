@@ -68,14 +68,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#090f1d] text-slate-100 flex flex-col selection:bg-[#005FB6] selection:text-white font-roboto">
-      {/* Background ambient lighting */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[550px] h-[550px] rounded-full bg-[#005FB6]/15 blur-[130px]" />
-        <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[#52AE32]/10 blur-[140px]" />
-        <div className="absolute bottom-[-10%] left-[25%] w-[450px] h-[450px] rounded-full bg-[#EE7203]/10 blur-[140px]" />
-      </div>
-
+    <div className="ach-app min-h-screen bg-[#f3f7fa] text-slate-900 flex flex-col selection:bg-[#005FB6] selection:text-white font-roboto">
       {/* Main Navigation */}
       <Navbar
         currentView={currentView}
@@ -185,12 +178,7 @@ export default function App() {
             <span>•</span>
             <span className="font-roboto">Herramienta de Documentos Humanitarios (Guatemala & Centroamérica)</span>
           </div>
-          <div className="flex items-center gap-3 text-[11px] font-roboto">
-            <span className="text-[#005FB6] font-bold">Azul #005FB6</span>
-            <span className="text-[#52AE32] font-bold">Verde #52AE32</span>
-            <span className="text-[#EE7203] font-bold">Naranja #EE7203</span>
-            <span className="text-[#707070] font-bold">Gris #707070</span>
-          </div>
+          <span className="text-[11px]">Seguridad alimentaria · Nutrición · Acción humanitaria</span>
         </div>
       </footer>
 

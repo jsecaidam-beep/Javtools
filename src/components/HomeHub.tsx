@@ -20,11 +20,11 @@ export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
   return (
     <div className="flex flex-col gap-8 py-4 animate-in fade-in duration-300">
       {/* Hero Welcome Banner */}
-      <div className="relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-10 border border-white/15 shadow-2xl bg-gradient-to-br from-slate-900/90 via-[#005FB6]/15 to-slate-900/90">
+      <div className="ach-hero relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-10 border border-white/15 shadow-2xl bg-gradient-to-br from-slate-900/90 via-[#005FB6]/15 to-slate-900/90">
         <div className="relative z-10 max-w-3xl flex flex-col gap-4">
           <div className="flex items-center gap-2.5">
             <span className="px-3 py-1 rounded-full bg-[#52AE32]/20 border border-[#52AE32]/40 text-[#52AE32] text-xs font-bold uppercase tracking-wider font-futura">
-              Suite Humanitaria Oficial • Acción contra el Hambre
+              Herramientas de comunicación • Acción contra el Hambre
             </span>
             <span className="hidden sm:inline text-xs text-slate-400 font-mono">
               Guía de Identidad & CARI
@@ -50,11 +50,11 @@ export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-[#EE7203]" />
-              <span>Regla oficial de 3 Logotipos</span>
+              <span>Logos del proyecto</span>
             </div>
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Asistencia Gemini Multimodal</span>
+              <span>Edición y asistencia de textos</span>
             </div>
           </div>
         </div>

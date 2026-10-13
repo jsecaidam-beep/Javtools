@@ -61,13 +61,26 @@ npm run preview
 
 ---
 
-## 🔑 Variables de Entorno (Opcional)
+## Tamaños y descargas
 
-Crea un archivo `.env` en la raíz si deseas habilitar las funciones de inteligencia artificial:
+Las portadas y contraportadas permiten elegir **Carta (8.5 × 11 pulgadas)** u **Oficio (8.5 × 13 pulgadas)**. La descarga PNG usa 300 dpi: 2550 × 3300 o 2550 × 3900 píxeles. La selección se transfiere de portada a créditos. Si el contenido excede la hoja, el editor pide reducirlo para evitar recortes.
 
-```env
-GEMINI_API_KEY=tu_clave_de_gemini_aqui
-PORT=3000
+La interfaz usa la paleta ACH, Futura cuando está instalada y Jost como alternativa, con Roboto para lectura. Jost y Roboto y las cinco fotografías de ejemplo se sirven desde la aplicación. Las fotografías son ilustrativas de Unsplash, no evidencias de intervenciones ACH. Reemplázalas con fotografías autorizadas del proyecto.
+
+## API en Vercel
+
+Las rutas `api/health.ts`, `api/extract-table.ts`, `api/ai/cover.ts` y `api/ai/credits.ts` comparten la aplicación Express de `server/app.ts`. El despliegue mantiene las rutas API fuera de la redirección a HTML. La clave `GEMINI_API_KEY` debe configurarse **solo en las variables del servidor de Vercel**, nunca con prefijo `VITE_`.
+
+Sin clave o si Gemini falla, los textos de portada/créditos usan propuestas locales y conservan los datos del usuario. La importación tabular CSV/TSV funciona sin IA; el reconocimiento de imágenes requiere Gemini. La IA propone textos editoriales, sin inventar códigos ni autores.
+
+## Verificación
+
+```bash
+npm ci
+npm run lint
+npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-> **Nota:** Si no configuras la clave de Gemini, la aplicación seguirá funcionando al 100% (edición de tablas, gráficas, portadas, exportaciones a Word y descargas en PNG) utilizando los generadores locales inteligentes.
+Las pruebas verifican descargas PNG y dimensiones en ambos tamaños, plantilla editorial, portapapeles de imagen y de Word/Excel, créditos y logos, gráficas, importación CSV con comillas, propuestas locales y descarga móvil. Para usar un navegador ya instalado, define `CHROMIUM_PATH`.

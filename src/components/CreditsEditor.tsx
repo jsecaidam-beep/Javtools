@@ -1,6 +1,8 @@
+import { PAGE_FORMATS, PAGE_WIDTH } from '../constants/pageFormats';
+import { PageFormatSelector } from './PageFormatSelector';
 import React, { useState, useRef } from 'react';
 import { CreditsData, TeamContributor } from '../types/brand';
-import { AchOfficialSvg } from './AchLogos';
+import { AchOfficialSvg, DynamicLogoRenderer } from './AchLogos';
 import { downloadElementAsPng, copyElementAsPngToClipboard } from '../utils/canvasExport';
 import {
   Copy,
@@ -36,6 +38,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [assistantNotice, setAssistantNotice] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
   const [donorInput, setDonorInput] = useState<string>('Fondo Humanitario Regional (RHPF LAC)');
   const [activeSubTab, setActiveSubTab] = useState<'text' | 'contributors' | 'colors' | 'ai'>('contributors');
@@ -117,7 +120,10 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
           currentAuthors: (creditsData.contributors || []).map((c) => c.name).join(', '),
         }),
       });
+      if (!res.ok) throw new Error("Servicio de asistencia no disponible");
       const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Servicio de asistencia no disponible");
+      setAssistantNotice(json.aiGenerated ? "Propuesta generada con IA. Revisa los datos antes de exportar." : "Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
       if (json.success && json.data) {
         const aiContributors = Array.isArray(json.data.contributors)
           ? json.data.contributors.map((c: any, i: number) => ({
@@ -144,6 +150,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
         });
       }
     } catch (e) {
+      setAssistantNotice("Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
       console.warn('AI credits error, applying local smart generator:', e);
       onChange({
         ...creditsData,
@@ -178,7 +185,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
     try {
       await downloadElementAsPng(
         creditsCanvasRef.current,
-        'contraportada-creditos-ach.png',
+        `contraportada-creditos-ach-${creditsData.pageFormat || 'carta'}.png`,
         { scale: 2, backgroundColor: null }
       );
       setDownloadSuccess(true);
@@ -197,6 +204,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+      {assistantNotice && <p role="status" className="glass-panel p-3 rounded-xl text-sm text-slate-600">{assistantNotice}</p>}
       {/* Top Banner / Actions Bar */}
       <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
         <div className="flex items-center gap-3">
@@ -317,6 +325,8 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
           </button>
         </div>
       </div>
+
+      <PageFormatSelector value={creditsData.pageFormat || 'carta'} onChange={format => updateField('pageFormat', format)} />
 
       {downloadError && (
         <div className="p-3 bg-red-950/80 border border-red-500/80 rounded-xl text-red-200 text-xs flex items-center justify-between gap-2">
@@ -932,9 +942,9 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
 
         {/* Live A4 Rendered Container */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center">
-          <div className="text-[11px] text-slate-400 mb-2 flex flex-wrap items-center justify-between w-full max-w-[540px] gap-2">
+          <div className="text-[11px] text-slate-400 mb-2 flex flex-wrap items-center justify-between w-full max-w-[510px] gap-2">
             <div className="flex items-center gap-2">
-              <span>Contraportada Oficial (A4 Vertical)</span>
+              <span>Contraportada ({PAGE_FORMATS[creditsData.pageFormat || 'carta'].label})</span>
               <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
               <span className="text-sky-400 font-semibold">Identidad ACH</span>
             </div>
@@ -981,7 +991,10 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
           {/* Physical Container */}
           <div
             ref={creditsCanvasRef}
-            className="w-full max-w-[540px] shadow-2xl rounded-sm overflow-hidden border border-slate-700 relative flex flex-col justify-between aspect-[1/1.414] p-8 sm:p-10 select-none transition-all duration-300"
+            data-export-height={PAGE_FORMATS[creditsData.pageFormat || 'carta'].height}
+            data-export-surface
+            data-export-width={PAGE_WIDTH}
+            className="w-full max-w-[510px] shadow-2xl rounded-sm overflow-hidden border border-slate-700 relative flex flex-col justify-between  p-4 sm:p-5 select-none transition-all duration-300"
             style={{
               background:
                 creditsData.bgTheme === 'custom'
@@ -996,7 +1009,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                   ? '#FFFFFF'
                   : 'linear-gradient(145deg, #005FB6 0%, #004A8F 50%, #003366 100%)',
               color: creditsData.bgTheme === 'pure-white' ? '#0F172A' : '#FFFFFF',
-              minHeight: '700px',
+              aspectRatio: `${PAGE_WIDTH} / ${PAGE_FORMATS[creditsData.pageFormat || 'carta'].height}`,
             }}
           >
             {/* Ambient Watermark vector silhouettes */}
@@ -1014,13 +1027,13 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             {/* Top Banner Block */}
             <div className="relative z-10 text-center flex flex-col items-center gap-1.5 pt-2">
               <h2
-                className="text-xl sm:text-2xl font-black tracking-wider uppercase font-futura"
+                className="text-lg sm:text-xl font-black tracking-wider uppercase font-futura"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#005FB6' : '#FFFFFF' }}
               >
                 {creditsData.topBanner}
               </h2>
               <div
-                className="text-xs sm:text-sm font-bold uppercase tracking-wide font-futura whitespace-pre-line leading-snug max-w-sm opacity-95"
+                className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wide font-futura whitespace-pre-line leading-snug max-w-sm opacity-95"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#334155' : 'rgba(255,255,255,0.95)' }}
               >
                 {creditsData.subBanner}
@@ -1028,21 +1041,23 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             </div>
 
             {/* Center Massive ACH Logo & Mission Title */}
-            <div className="relative z-10 flex flex-col items-center text-center my-4 gap-2.5">
+            <div className="relative z-10 flex flex-col items-center text-center my-1 gap-1.5">
               <div className="scale-110 my-1 max-w-[260px]">
                 <AchOfficialSvg
                   variant={
-                    creditsData.logoColorMode !== 'auto'
+                    creditsData.bgTheme === 'pure-white' && creditsData.logoColorMode === 'white'
+                      ? 'color'
+                      : creditsData.logoColorMode !== 'auto'
                       ? creditsData.logoColorMode
                       : creditsData.bgTheme === 'pure-white'
                       ? 'color'
                       : 'white'
                   }
-                  className="h-12 sm:h-14 w-auto"
+                  className="h-9 sm:h-10 w-auto"
                 />
               </div>
               <div
-                className="text-xs sm:text-sm font-semibold font-futura whitespace-pre-line max-w-md pt-1 opacity-90"
+                className="text-[10px] sm:text-[11px] font-semibold font-futura whitespace-pre-line max-w-md pt-1 opacity-90"
                 style={{ color: creditsData.bgTheme === 'pure-white' ? '#475569' : '#FFFFFF' }}
               >
                 {creditsData.missionSubtitle}
@@ -1052,7 +1067,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             {/* SECTION: ENLISTED PERSON CREDITS (Authors / Technical Team) */}
             {isShowingPersonCredits && contributorsList.length > 0 && (
               <div
-                className="relative z-10 w-full my-3 px-3 py-3 rounded-lg border transition-all"
+                className="relative z-10 w-full my-1 px-2 py-2 rounded-lg border transition-all"
                 style={{
                   backgroundColor:
                     creditsData.bgTheme === 'pure-white' ? 'rgba(0, 95, 182, 0.04)' : 'rgba(255, 255, 255, 0.08)',
@@ -1062,7 +1077,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
               >
                 {/* Section Title */}
                 <div
-                  className="font-black text-xs sm:text-sm tracking-wider uppercase font-futura text-center mb-2.5 pb-1 border-b"
+                  className="font-black text-[10px] sm:text-[11px] tracking-wider uppercase font-futura text-center mb-1.5 pb-1 border-b"
                   style={{
                     borderColor: creditsData.bgTheme === 'pure-white' ? 'rgba(0, 95, 182, 0.2)' : 'rgba(255, 255, 255, 0.2)',
                     color: creditsData.bgTheme === 'pure-white' ? '#005FB6' : '#FFFFFF',
@@ -1076,7 +1091,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                   className={`grid ${
                     columnsCount === 1
                       ? 'grid-cols-1 gap-2 max-w-md mx-auto'
-                      : 'grid-cols-2 gap-x-4 gap-y-2.5'
+                      : 'grid-cols-2 gap-x-3 gap-y-1.5'
                   }`}
                 >
                   {contributorsList.map((person) => (
@@ -1088,7 +1103,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                       }}
                     >
                       <div
-                        className="font-bold text-xs sm:text-[13px] leading-tight font-futura"
+                        className="font-bold text-[10px] sm:text-[11px] leading-tight font-futura"
                         style={{
                           color: creditsData.bgTheme === 'pure-white' ? '#0F172A' : '#FFFFFF',
                         }}
@@ -1097,7 +1112,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                       </div>
                       {person.role && (
                         <div
-                          className="text-[9.5px] sm:text-[10.5px] font-roboto leading-snug mt-0.5 opacity-90"
+                          className="text-[9px] sm:text-[9.5px] font-roboto leading-snug mt-0.5 opacity-90"
                           style={{
                             color: creditsData.bgTheme === 'pure-white' ? '#475569' : '#E2E8F0',
                           }}
@@ -1111,9 +1126,21 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
               </div>
             )}
 
+            {creditsData.logos.some(logo => logo.type !== 'ach') && (
+              <div className="relative z-10 flex flex-wrap items-center justify-center gap-3 my-1">
+                {creditsData.logos.filter(logo => logo.type !== 'ach').map(logo => (
+                  <DynamicLogoRenderer key={logo.id} logo={logo} variant={creditsData.bgTheme === 'pure-white' ? 'color' : 'white'} overrideColorMode={creditsData.bgTheme === 'pure-white' ? 'color' : creditsData.logoColorMode === 'auto' ? 'white' : creditsData.logoColorMode} className="h-7" />
+                ))}
+              </div>
+            )}
+            <div className="relative z-10 text-[10px] leading-snug space-y-1 my-1">
+              {creditsData.donorAttribution && <p>{creditsData.donorAttribution}</p>}
+              {creditsData.disclaimer && <p className="opacity-90 italic">{creditsData.disclaimer}</p>}
+            </div>
+
             {/* Bottom Section: Address Columns + PQR + Website */}
             <div
-              className="relative z-10 flex flex-col gap-3 text-[10px] sm:text-[11px] font-roboto border-t pt-3"
+              className="relative z-10 flex flex-col gap-2 text-[9px] sm:text-[10px] font-roboto border-t pt-3"
               style={{
                 borderColor:
                   creditsData.bgTheme === 'pure-white' ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.2)',
@@ -1226,7 +1253,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                 }}
               >
                 <span
-                  className="font-extrabold text-xs sm:text-sm tracking-wider font-futura"
+                  className="font-extrabold text-[10px] sm:text-[11px] tracking-wider font-futura"
                   style={{ color: creditsData.bgTheme === 'pure-white' ? '#52AE32' : '#FFFFFF' }}
                 >
                   {creditsData.webUrl}

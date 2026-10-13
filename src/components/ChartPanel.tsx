@@ -1,3 +1,5 @@
+import { parseNumericValue } from '../utils/tabularData';
+import { canvasToPngBlob, downloadBlob } from '../utils/canvasExport';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Chart,
@@ -128,8 +130,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
     const values = targetRows.map((row) => {
       const cell = row?.cells?.[valueColIndex];
       if (!cell) return 0;
-      const sanitized = (cell.value || '').replace(/[^0-9.-]+/g, '');
-      const parsed = parseFloat(sanitized);
+      const parsed = parseNumericValue(cell.value || '');
       return isNaN(parsed) ? 0 : parsed;
     });
 
@@ -175,13 +176,14 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
       options: {
         indexAxis: isHorizontal ? 'y' : 'x',
         responsive: true,
+        animation: false,
         maintainAspectRatio: false,
         plugins: {
           legend: {
             display: baseType === 'pie' || baseType === 'doughnut' || datasets.length > 1,
             position: 'bottom',
             labels: {
-              color: '#e2e8f0',
+              color: '#374c5e',
               font: {
                 family: "'Futura', 'Trebuchet MS', Arial, sans-serif",
                 size: 11,
@@ -212,24 +214,24 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
                 x: {
                   stacked: isStacked,
                   ticks: {
-                    color: '#94a3b8',
+                    color: '#475569',
                     font: {
                       family: "'Futura', 'Trebuchet MS', Arial, sans-serif",
                       size: 10,
                     },
                   },
-                  grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                  grid: { color: 'rgba(0, 62, 126, 0.10)' },
                 },
                 y: {
                   stacked: isStacked,
                   ticks: {
-                    color: '#94a3b8',
+                    color: '#475569',
                     font: {
                       family: "'Futura', 'Trebuchet MS', Arial, sans-serif",
                       size: 10,
                     },
                   },
-                  grid: { color: 'rgba(255, 255, 255, 0.06)' },
+                  grid: { color: 'rgba(0, 62, 126, 0.10)' },
                 },
               },
       },
@@ -242,71 +244,52 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
     };
   }, [tableData, chartType, labelColIndex, valueColIndex, includeTotalRow, useCustomPresetData]);
 
-  // Copy Chart as PNG
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  const createChartExport = (): HTMLCanvasElement => {
+    if (!canvasRef.current) throw new Error('No se encontró la gráfica.');
+    const source = canvasRef.current;
+    const canvas = document.createElement('canvas');
+    canvas.width = source.width;
+    canvas.height = source.height + 100;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('No se pudo preparar la gráfica.');
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#005FB6';
+    ctx.font = "bold 18px 'Jost', Arial, sans-serif";
+    ctx.fillText(useCustomPresetData?.name || tableData.title || 'Gráfica ACH', 20, 30, canvas.width - 40);
+    ctx.font = "12px 'Roboto', Arial, sans-serif";
+    ctx.fillStyle = '#707070';
+    ctx.fillText(useCustomPresetData?.description || tableData.subtitle || 'Acción contra el Hambre', 20, 52, canvas.width - 40);
+    ctx.drawImage(source, 0, 75);
+    return canvas;
+  };
+
   const handleCopyChartImage = async () => {
-    if (!canvasRef.current) return;
+    setExportError(null);
     try {
-      const source = canvasRef.current;
-      const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = source.width;
-      exportCanvas.height = source.height + 65;
-      const expCtx = exportCanvas.getContext('2d');
-      if (!expCtx) return;
-
-      // Background
-      expCtx.fillStyle = '#FFFFFF';
-      expCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
-
-      // Title
-      expCtx.font = "bold 16px 'Futura', 'Trebuchet MS', Arial, sans-serif";
-      expCtx.fillStyle = '#005FB6';
-      expCtx.fillText(
-        useCustomPresetData ? useCustomPresetData.name : tableData.title || 'Gráfica ACH',
-        20,
-        28
-      );
-
-      expCtx.font = "11px 'Futura', 'Trebuchet MS', Arial, sans-serif";
-      expCtx.fillStyle = '#707070';
-      expCtx.fillText(
-        useCustomPresetData
-          ? useCustomPresetData.description
-          : tableData.subtitle || 'Acción contra el Hambre - Formato Oficial',
-        20,
-        45
-      );
-
-      // Chart
-      expCtx.drawImage(source, 0, 55);
-
-      exportCanvas.toBlob(async (blob) => {
-        if (!blob) return;
-        if (navigator.clipboard && window.ClipboardItem) {
-          await navigator.clipboard.write([
-            new ClipboardItem({ 'image/png': blob }),
-          ]);
-          setCopiedImage(true);
-          setTimeout(() => setCopiedImage(false), 3000);
-        } else {
-          handleDownloadChartPng();
-        }
-      }, 'image/png');
-    } catch (e) {
-      console.error('Failed to copy chart image:', e);
-      handleDownloadChartPng();
+      if (!navigator.clipboard?.write || !window.ClipboardItem) throw new Error('Portapapeles no disponible');
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': canvasToPngBlob(createChartExport()) })]);
+      setCopiedImage(true);
+      setTimeout(() => setCopiedImage(false), 3000);
+    } catch {
+      await handleDownloadChartPng();
     }
   };
 
-  const handleDownloadChartPng = () => {
-    if (!canvasRef.current) return;
-    const link = document.createElement('a');
-    link.download = `ach-grafica-${Date.now()}.png`;
-    link.href = canvasRef.current.toDataURL('image/png');
-    link.click();
+  const handleDownloadChartPng = async () => {
+    setExportError(null);
+    try {
+      downloadBlob(await canvasToPngBlob(createChartExport()), `ach-grafica-${Date.now()}.png`);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'No se pudo descargar la gráfica.');
+    }
   };
 
   return (
     <div className="glass-panel rounded-2xl p-4 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4 animate-in fade-in duration-300">
+      {exportError && <p role="alert" className="text-red-700">{exportError}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-700/60">
         <div className="flex items-center gap-2.5">

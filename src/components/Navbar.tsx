@@ -73,7 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => onNavigate('home')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
               currentView === 'home'
-                ? 'bg-slate-700 text-white shadow'
+                ? 'bg-[#005FB6] text-white shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >

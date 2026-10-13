@@ -1,3 +1,5 @@
+import { PAGE_FORMATS, PAGE_WIDTH } from '../constants/pageFormats';
+import { PageFormatSelector } from './PageFormatSelector';
 import React, { useState, useRef } from 'react';
 import {
   CoverData,
@@ -116,6 +118,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
   onNavigateToCredits,
 }) => {
   const [activeTab, setActiveTab] = useState<'content' | 'elements' | 'photo' | 'logos' | 'colors' | 'ai'>('content');
+  const [assistantNotice, setAssistantNotice] = useState<string | null>(null);
   const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
   const [aiTopic, setAiTopic] = useState<string>('');
   const [copiedImage, setCopiedImage] = useState<boolean>(false);
@@ -200,7 +203,10 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
           documentType: coverData.categoryPill,
         }),
       });
+      if (!res.ok) throw new Error("Servicio de asistencia no disponible");
       const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Servicio de asistencia no disponible");
+      setAssistantNotice(json.aiGenerated ? "Propuesta generada con IA. Revisa los datos antes de exportar." : "Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
       if (json.success && json.data) {
         onChange({
           ...coverData,
@@ -216,6 +222,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
         });
       }
     } catch (e) {
+      setAssistantNotice("Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
       console.warn('AI cover API unreachable, applying local smart generator:', e);
       const cleanTitle = (aiTopic || coverData.title || 'RESPUESTA HUMANITARIA Y SEGURIDAD ALIMENTARIA').toUpperCase();
       onChange({
@@ -223,12 +230,12 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
         title: cleanTitle,
         categoryPill: 'INFORME DE ACOMPAÑAMIENTO, MONITOREO Y SUPERVISIÓN',
         subtitle: `Acciones de asistencia humanitaria y nutricional en municipios priorizados. ${aiTopic || ''}`.trim(),
-        projectCode: 'CBPF-GTM-R-INGO-NSFT-39626',
-        internalCode: 'GTD5AI',
-        location: 'Chiquimula y Huehuetenango, Guatemala',
+        projectCode: coverData.projectCode,
+        internalCode: coverData.internalCode,
+        location: coverData.location,
         authorName: coverData.authorName || 'Equipo Técnico Humanitario',
-        authorRole: 'Oficial de Proyecto y Monitoreo',
-        authorBase: 'Base Regional Chiquimula',
+        authorRole: coverData.authorRole,
+        authorBase: coverData.authorBase,
       });
     } finally {
       setIsAiLoading(false);
@@ -265,7 +272,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
         .slice(0, 35);
       await downloadElementAsPng(
         coverCanvasRef.current,
-        `portada-ach-${cleanSlug || 'oficial'}.png`,
+        `portada-ach-${coverData.pageFormat || 'carta'}-${cleanSlug || 'oficial'}.png`,
         { scale: 2, backgroundColor: '#FFFFFF' }
       );
       setDownloadSuccess(true);
@@ -284,6 +291,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
       subBanner: `${coverData.location || 'Guatemala'} • ${coverData.projectCode || ''}`.trim(),
       donorAttribution: `Proyecto implementado por Fundación Acción contra el Hambre, con el apoyo de socios y donantes en ${coverData.location || 'Centroamérica'}.`,
       logos: coverData.logos,
+      pageFormat: coverData.pageFormat || 'carta',
     });
   };
 
@@ -291,6 +299,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
+      {assistantNotice && <p role="status" className="glass-panel p-3 rounded-xl text-sm text-slate-600">{assistantNotice}</p>}
       {/* Top Banner / Actions Bar */}
       <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
         <div>
@@ -368,6 +377,8 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
           </button>
         </div>
       </div>
+
+      <PageFormatSelector value={coverData.pageFormat || 'carta'} onChange={format => updateField('pageFormat', format)} />
 
       {downloadError && (
         <div className="p-3 bg-red-950/80 border border-red-500/80 rounded-xl text-red-200 text-xs flex items-center justify-between gap-2">
@@ -1156,7 +1167,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
         {/* Live A4 Canvas Preview (Right Column) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center">
           <div className="text-[11px] text-slate-400 mb-2 flex items-center gap-2">
-            <span>Previsualización en tiempo real (Proporción A4 Vertical)</span>
+            <span>Previsualización en tiempo real ({PAGE_FORMATS[coverData.pageFormat || 'carta'].label})</span>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             <span className="text-emerald-400 font-semibold">Listo para Word</span>
           </div>
@@ -1164,15 +1175,18 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
           {/* The Physical A4 Rendered Container */}
           <div
             ref={coverCanvasRef}
-            className="w-full max-w-[520px] bg-white text-slate-900 shadow-2xl rounded-sm overflow-hidden border border-slate-300 relative flex flex-col aspect-[1/1.414]"
-            style={{ minHeight: '680px' }}
+            data-export-height={PAGE_FORMATS[coverData.pageFormat || 'carta'].height}
+            data-export-surface
+            data-export-width={PAGE_WIDTH}
+            className="w-full max-w-[510px] bg-white text-slate-900 shadow-2xl rounded-sm overflow-hidden border border-slate-300 relative flex flex-col "
+            style={{ aspectRatio: `${PAGE_WIDTH} / ${PAGE_FORMATS[coverData.pageFormat || 'carta'].height}` }}
           >
             {/* STYLE 1: INFORME DE MONITOREO (Screenshot 1 Reference) */}
             {coverData.style === 'monitoring' ? (
               <div className="flex-1 flex flex-col justify-between bg-white h-full">
                 {/* Top Section with dynamic background color */}
                 <div
-                  className="p-6 text-white flex flex-col gap-3 relative transition-colors duration-300"
+                  className="p-4 text-white flex flex-col gap-2 relative transition-colors duration-300"
                   style={{
                     backgroundColor:
                       coverData.themeColor === 'custom'
@@ -1208,7 +1222,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                             key={logo.id}
                             logo={logo}
                             variant={coverData.themeColor === 'white' ? 'color' : 'white'}
-                            overrideColorMode={coverData.logoColorMode}
+                            overrideColorMode={coverData.logoColorMode === 'white' && (coverData.themeColor === 'white' || coverData.style !== 'monitoring') ? 'color' : coverData.logoColorMode}
                             className="h-8 max-h-10"
                           />
                         ))
@@ -1235,13 +1249,13 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                   )}
 
                   {/* Big Futura Title */}
-                  <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-white uppercase text-center leading-snug font-futura py-1">
+                  <h1 className="text-lg sm:text-xl font-extrabold tracking-tight uppercase text-center leading-snug font-futura py-1">
                     {coverData.title}
                   </h1>
 
                   {/* Subtitle in Style 1 (if enabled) */}
                   {coverData.showSubtitle !== false && coverData.subtitle && (
-                    <p className="text-white/90 text-[11px] sm:text-xs text-center font-roboto italic px-2 leading-relaxed pb-1">
+                    <p className="opacity-90 text-[11px] sm:text-xs text-center font-roboto italic px-2 leading-relaxed pb-1">
                       {coverData.subtitle}
                     </p>
                   )}
@@ -1251,7 +1265,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                     (coverData.showInternalCode !== false && coverData.internalCode) ||
                     (coverData.showLocation !== false && coverData.location) ||
                     (coverData.showDate !== false && coverData.date)) && (
-                    <div className="text-white/90 text-[10px] sm:text-[11px] space-y-0.5 pt-1 font-roboto border-t border-white/15">
+                    <div className="opacity-90 text-[10px] sm:text-[11px] space-y-0.5 pt-1 font-roboto border-t border-white/15">
                       {coverData.showProjectCode !== false && coverData.projectCode && (
                         <div>
                           <strong>Proyecto:</strong> {coverData.projectCode}
@@ -1278,16 +1292,16 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
                 {/* Middle Section: Real Humanitarian Field Photograph or Textured Brand Minimal */}
                 {coverData.showPhoto !== false ? (
-                  <div className="flex-1 relative overflow-hidden bg-slate-100 min-h-[200px]">
+                  <div className="flex-1 relative overflow-hidden bg-slate-100 min-h-[140px]">
                     <img
                       src={coverData.photoUrl}
                       alt="Fotografía de portada"
                       crossOrigin="anonymous"
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   </div>
                 ) : (
-                  <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 min-h-[200px] flex items-center justify-center p-6 border-y border-slate-300">
+                  <div className="flex-1 relative overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 min-h-[140px] flex items-center justify-center p-6 border-y border-slate-300">
                     <div className="text-center opacity-30 pointer-events-none select-none">
                       <AchOfficialSvg variant="dark" className="h-14 mx-auto mb-2 opacity-50" />
                       <span className="text-[11px] font-futura uppercase tracking-widest text-slate-700 font-bold block">
@@ -1299,7 +1313,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
                 {/* Bottom Section: Solid Green Bar (#52AE32) with author */}
                 {coverData.showAuthorBlock !== false && (coverData.authorName || coverData.authorRole || coverData.authorBase) && (
-                  <div className="bg-[#52AE32] text-white p-4 text-center font-roboto">
+                  <div className="bg-[#52AE32] text-white p-3 text-center font-roboto">
                     {coverData.authorName && (
                       <div className="font-bold text-xs sm:text-sm font-futura">
                         {coverData.authorName}
@@ -1328,7 +1342,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                       src={coverData.photoUrl}
                       alt="Fotografía superior"
                       crossOrigin="anonymous"
-                      className="w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-[#005FB6] to-[#003366] flex items-center justify-center">
@@ -1402,7 +1416,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                             key={logo.id}
                             logo={logo}
                             variant="color"
-                            overrideColorMode={coverData.logoColorMode}
+                            overrideColorMode={coverData.logoColorMode === 'white' && (coverData.themeColor === 'white' || coverData.style !== 'monitoring') ? 'color' : coverData.logoColorMode}
                             className="h-8 max-h-10"
                           />
                         ))
