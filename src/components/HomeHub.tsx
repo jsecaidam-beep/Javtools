@@ -10,10 +10,12 @@ import {
   Layers,
   Palette,
   CheckCircle2,
+  Mail,
 } from 'lucide-react';
+import type { NavView } from './Navbar';
 
 interface HomeHubProps {
-  onNavigate: (view: 'tables' | 'charts' | 'covers' | 'credits') => void;
+  onNavigate: (view: Exclude<NavView, 'home'>) => void;
 }
 
 export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
@@ -36,7 +38,7 @@ export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
           </h1>
 
           <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-roboto">
-            Genera tablas sin desbordamiento para Microsoft Word, gráficas oficiales (CARI/SAN), portadas personalizadas y hojas de créditos con la identidad visual corporativa de Acción contra el Hambre y asistencia inteligente con Gemini AI.
+            Genera tablas para Microsoft Word, gráficas oficiales (CARI/SAN), portadas, hojas de créditos e invitaciones con la identidad visual de Acción contra el Hambre. Personaliza cada pieza y descarga el resultado desde el editor.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-300">
@@ -65,7 +67,7 @@ export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
         </div>
       </div>
 
-      {/* 4 Interactive Feature Cards */}
+      {/* Interactive Feature Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Card 1: Tablas Humanitarias */}
         <div
@@ -246,6 +248,49 @@ export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
             </span>
           </div>
         </div>
+
+        {/* Card 5: Invitaciones editables */}
+        <button
+          type="button"
+          onClick={() => onNavigate('invitations')}
+          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-[#005FB6]/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#005FB6]/20 flex flex-col justify-between text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#005FB6]"
+        >
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-xl bg-[#005FB6]/20 border border-[#005FB6]/40 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
+                <Mail className="w-6 h-6" />
+              </div>
+              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
+                Vista previa & PNG
+              </span>
+            </div>
+
+            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-sky-300 transition-colors">
+              5. Invitaciones para inauguraciones
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
+              Prepara invitaciones con el fondo de los rótulos y los logos de FHG y Acción contra el Hambre. Edita destinatario, cargo, fecha, hora y lugar; oculta los campos que no necesites y el diseño se ajusta al contenido.
+            </p>
+
+            <div className="flex flex-wrap gap-1.5 mb-6">
+              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
+                Campos opcionales
+              </span>
+              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
+                Ajuste automático
+              </span>
+              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
+                Logo FHG
+              </span>
+            </div>
+          </div>
+
+          <span className="flex items-center justify-between pt-4 border-t border-slate-800">
+            <span className="text-xs font-bold text-[#005FB6] group-hover:text-sky-300 flex items-center gap-1">
+              Crear Invitación <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </span>
+          </span>
+        </button>
       </div>
     </div>
   );

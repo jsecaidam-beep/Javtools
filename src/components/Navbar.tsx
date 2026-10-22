@@ -11,10 +11,11 @@ import {
   BookOpen,
   FileCheck2,
   Home,
+  Mail,
 } from 'lucide-react';
 import { AchOfficialSvg } from './AchLogos';
 
-export type NavView = 'home' | 'tables' | 'charts' | 'covers' | 'credits';
+export type NavView = 'home' | 'tables' | 'charts' | 'covers' | 'credits' | 'invitations';
 
 interface NavbarProps {
   currentView: NavView;
@@ -128,6 +129,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             <FileCheck2 className="w-3.5 h-3.5" />
             <span>Créditos</span>
           </button>
+
+          <button
+            onClick={() => onNavigate('invitations')}
+            aria-current={currentView === 'invitations' ? 'page' : undefined}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+              currentView === 'invitations'
+                ? 'bg-[#005FB6] text-white shadow'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Mail className="w-3.5 h-3.5" />
+            <span>Invitaciones</span>
+          </button>
         </nav>
 
         {/* Right contextual actions */}
@@ -183,13 +197,13 @@ export const Navbar: React.FC<NavbarProps> = ({
           )}
 
           {/* HTML Standalone Code Viewer */}
-          <button
+          {currentView !== 'invitations' && <button
             onClick={onOpenHtmlModal}
             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs transition"
             title="Ver código HTML / Exportar archivo"
           >
             <FileCode className="w-4 h-4 text-[#EE7203]" />
-          </button>
+          </button>}
         </div>
       </div>
     </header>

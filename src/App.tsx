@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { PREDEFINED_TEMPLATES } from './constants/templates';
 import { INITIAL_COVER_DATA, INITIAL_CREDITS_DATA } from './constants/brandAssets';
 import { TableData, PredefinedTemplate } from './types/table';
@@ -11,11 +11,28 @@ import { TableEditor } from './components/TableEditor';
 import { ChartPanel } from './components/ChartPanel';
 import { CoverEditor } from './components/CoverEditor';
 import { CreditsEditor } from './components/CreditsEditor';
+import { InvitationEditor } from './components/InvitationEditor';
 import { ExportModal } from './components/ExportModal';
 import { FileCheck, Sparkles, ShieldCheck, HeartHandshake } from 'lucide-react';
 
+const VIEW_HASHES: Record<NavView, string> = {
+  home: 'inicio',
+  tables: 'tablas',
+  charts: 'graficas',
+  covers: 'portadas',
+  credits: 'creditos',
+  invitations: 'invitaciones',
+};
+
+const getViewFromHash = (): NavView => {
+  const hash = window.location.hash.slice(1).toLowerCase();
+  return (Object.keys(VIEW_HASHES) as NavView[]).find(
+    (view) => VIEW_HASHES[view] === hash || view === hash,
+  ) ?? 'home';
+};
+
 export default function App() {
-  const [currentView, setCurrentView] = useState<NavView>('home');
+  const [currentView, setCurrentView] = useState<NavView>(getViewFromHash);
   const [currentTemplateId, setCurrentTemplateId] = useState<string>(PREDEFINED_TEMPLATES[0].id);
   const [tableData, setTableData] = useState<TableData>(PREDEFINED_TEMPLATES[0].data);
   const [coverData, setCoverData] = useState<CoverData>(INITIAL_COVER_DATA);
@@ -24,6 +41,24 @@ export default function App() {
   const [copiedWord, setCopiedWord] = useState<boolean>(false);
   const [showExportModal, setShowExportModal] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const syncView = () => setCurrentView(getViewFromHash());
+    window.addEventListener('hashchange', syncView);
+    window.addEventListener('popstate', syncView);
+    return () => {
+      window.removeEventListener('hashchange', syncView);
+      window.removeEventListener('popstate', syncView);
+    };
+  }, []);
+
+  const handleNavigate = (view: NavView) => {
+    const nextHash = `#${VIEW_HASHES[view]}`;
+    if (window.location.hash !== nextHash) {
+      window.history.pushState(null, '', nextHash);
+    }
+    setCurrentView(view);
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -63,7 +98,7 @@ export default function App() {
         ...suggestedData,
       }));
     }
-    setCurrentView('credits');
+    handleNavigate('credits');
     showToast('Metadatos transferidos a la hoja de créditos.');
   };
 
@@ -72,7 +107,7 @@ export default function App() {
       {/* Main Navigation */}
       <Navbar
         currentView={currentView}
-        onNavigate={setCurrentView}
+        onNavigate={handleNavigate}
         currentTemplateId={currentTemplateId}
         onSelectTemplate={handleSelectTemplate}
         onCopyWord={handleCopyWord}
@@ -83,9 +118,9 @@ export default function App() {
 
       {/* Workspace Body */}
       <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
-        {/* VIEW 1: HOME HUB (Welcome Screen with 4 cards) */}
+        {/* VIEW 1: HOME HUB */}
         {currentView === 'home' && (
-          <HomeHub onNavigate={setCurrentView} />
+          <HomeHub onNavigate={handleNavigate} />
         )}
 
         {/* VIEW 2: TABLES GENERATOR */}
@@ -114,7 +149,7 @@ export default function App() {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setCurrentView('charts')}
+                  onClick={() => handleNavigate('charts')}
                   className="px-3.5 py-1.5 rounded-lg bg-[#52AE32]/20 hover:bg-[#52AE32]/30 text-emerald-300 border border-[#52AE32]/40 text-xs font-bold transition flex items-center gap-1.5"
                 >
                   <span>Módulo de Gráficas</span>
@@ -136,7 +171,7 @@ export default function App() {
             <TableEditor
               tableData={tableData}
               onChange={setTableData}
-              onNavigateToCharts={() => setCurrentView('charts')}
+              onNavigateToCharts={() => handleNavigate('charts')}
             />
           </div>
         )}
@@ -146,7 +181,7 @@ export default function App() {
           <div className="flex flex-col gap-6 animate-in fade-in duration-300">
             <ChartPanel
               tableData={tableData}
-              onNavigateToTables={() => setCurrentView('tables')}
+              onNavigateToTables={() => handleNavigate('tables')}
             />
           </div>
         )}
@@ -165,9 +200,11 @@ export default function App() {
           <CreditsEditor
             creditsData={creditsData}
             onChange={setCreditsData}
-            onNavigateToCover={() => setCurrentView('covers')}
+            onNavigateToCover={() => handleNavigate('covers')}
           />
         )}
+
+        {currentView === 'invitations' && <InvitationEditor />}
       </main>
 
       {/* Corporate Footer */}

@@ -1,6 +1,10 @@
-# Generador ACH - Tablas, Gráficas y Portadas Humanitarias
+# Generador ACH - Tablas, Gráficas, Portadas e Invitaciones
 
-Aplicación web con la identidad visual corporativa de **Acción contra el Hambre (ACH)** para la generación de tablas sin desbordamiento para Microsoft Word, gráficas nutricionales (CARI/SAN), portadas oficiales estilo Canva y contraportadas con páginas de créditos.
+Aplicación web con la identidad visual corporativa de **Acción contra el Hambre (ACH)** para la generación de tablas sin desbordamiento para Microsoft Word, gráficas nutricionales (CARI/SAN), portadas oficiales estilo Canva, contraportadas con páginas de créditos e invitaciones.
+
+## Invitaciones
+
+El módulo **Invitaciones**, disponible también mediante `#invitaciones`, usa el fondo de los rótulos y los logos FHG y ACH. Permite personalizar los datos del evento, ocultar campos y reajustar la composición antes de descargarla como PNG. Los datos y opciones del editor se conservan en este navegador.
 
 ---
 
