@@ -620,7 +620,10 @@ export const TableEditor: React.FC<TableEditorProps> = ({ tableData, onChange, o
   };
 
   // Apply Creative Color Presets
-  const applyPresetTheme = (preset: 'cari' | 'ach' | 'monochrome' | 'soft') => {
+  const applyPresetTheme = (preset: 'cari' | 'ach' | 'monochrome' | 'soft' | 'editorial' | 'ocean' | 'forest' | 'zebra') => {
+    const modernThemes:Record<string,{header:string;stripe:string;ink:string}>={editorial:{header:'#173B60',stripe:'#F1F5F9',ink:'#173B60'},ocean:{header:'#006880',stripe:'#E8F5FA',ink:'#164E63'},forest:{header:'#286B32',stripe:'#EFF7EA',ink:'#245530'},zebra:{header:'#005FB6',stripe:'#E8F1FC',ink:'#003E7E'}};
+    const selected=modernThemes[preset];
+    if(selected){onChange({...tableData,headerBgColors:tableData.headers.map(()=>selected.header),headerRows:tableData.headerRows?.map(row=>row.map(cell=>({...cell,bgColor:selected.header,textColor:'#FFFFFF'}))),rows:tableData.rows.map((row,i)=>({...row,rowBgColor:i%2?selected.stripe:'#FFFFFF',cells:row.cells.map(cell=>({...cell,bgColor:i%2?selected.stripe:'#FFFFFF',textColor:selected.ink,badgeColor:'none' as const}))}))});setShowPresetMenu(false);return;}
     if (preset === 'cari') {
       const newHeaderColors = ['#A6A6A6', '#A6A6A6', '#8DC63F', '#FFF200', '#F7941D', '#ED1C24'];
       onChange({
@@ -730,7 +733,7 @@ export const TableEditor: React.FC<TableEditorProps> = ({ tableData, onChange, o
               <div className="absolute left-0 top-full mt-1 z-40 bg-slate-900 border border-slate-700 rounded-xl p-2 shadow-2xl w-56 flex flex-col gap-1.5 text-xs">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
                   Estilos Institucionales
-                </span>
+                </span>{([['editorial','Editorial limpio'],['ocean','Océano'],['forest','Bosque'],['zebra','Franjas azules']] as const).map(([id,name])=><button key={id} onClick={()=>applyPresetTheme(id)} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-left text-white"><span className="font-semibold">{name}</span><span style={{background:{editorial:'#173B60',ocean:'#006880',forest:'#286B32',zebra:'#005FB6'}[id],width:14,height:14,borderRadius:4}}/></button>)}
                 <button
                   onClick={() => applyPresetTheme('cari')}
                   className="flex items-center justify-between p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-left text-white"

@@ -39,3 +39,11 @@ Convocatorias actualizadas: fondos degradados (azul/verde ACH, aurora y verde), 
 Historias: PNG, SVG y video se muestran en un diálogo de revisión; el archivo solo se descarga al pulsar Descargar. Dos barras ajustan velocidad (0.3–3×) e intensidad (0–100%) de la flotación. Fotos: 30, 45 o 60 segundos, con opciones cortas de 6/15 segundos. Videos: duración original del archivo, sin repetirlo en la exportación. La grabación se realiza en tiempo real y sigue sin audio. Titular con interlineado más compacto. Convocatorias: PNG con revisión previa, máscara orgánica más ancha y fotografías adaptadas al espacio horizontal.
 
 Logo Javtools vectorizado en `public/assets/brand/javtools.svg`, siete trazados sin imagen raster incrustada; integrado en la cabecera y favicon. Validación: PNG con descarga tras revisión y MP4 de 3.01 segundos para un original de 3 segundos, 1080 × 1920. Previsualización horizontal de convocatorias comprobada.
+
+## Portadas y visualización de datos renovadas
+
+Cuatro portadas nuevas: Aurora, Órbita, Editorial y Horizonte, además de los dos estilos anteriores. ACH siempre visible; FHG viene incluido por defecto y se pueden añadir logos de socios. Los logos nuevos conservan sus colores y proporciones en una banda blanca adaptable. Carta/Oficio, fotos, campos de metadatos y autoría siguen disponibles. Comprobada la exportación de los cuatro estilos a PNG de 2550 × 3300.
+
+Gráficas: nueve tipos (barras verticales/horizontales/apiladas, circular, dona, líneas, área, radar y área polar); cuatro paletas (institucional, Océano, Pastel editorial y Bosque). Probados los cuatro tipos nuevos con datos de referencia y descarga PNG sin errores de navegador.
+
+Tablas: nuevos estilos Editorial limpio, Océano, Bosque y Franjas azules. Aplican cabeceras y filas alternas sin cambiar valores ni fusiones. Confirmados los colores de cabecera y filas en el HTML exportado y la acción de copiado para Word.

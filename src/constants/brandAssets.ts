@@ -65,7 +65,7 @@ export const PRELOADED_COVER_PHOTOS = [
 
 // Initial default cover matching Screenshot 1 & PDF 1
 export const INITIAL_COVER_DATA: CoverData = {
-  style: 'monitoring',
+  style: 'aurora-cover',
   categoryPill: 'INFORME DE ACOMPAÑAMIENTO, MONITOREO Y SUPERVISIÓN',
   title: 'ENTREGA DE SEGUNDAS TRANSFERENCIAS MONETARIAS Y KITS DE HIGIENE',
   subtitle: 'Proyecto de Respuesta humanitaria multisectorial para salvar vidas frente a impactos del choque climático en cuatro municipios de Huehuetenango y Chiquimula.',

@@ -9,7 +9,7 @@ export interface LogoItem {
   variant?: 'color' | 'white' | 'dark' | 'monochrome';
 }
 
-export type CoverStyle = 'monitoring' | 'identity-box' | 'editorial-split' | 'presentation';
+export type CoverStyle = 'aurora-cover' | 'orbit-cover' | 'editorial-cover' | 'panorama-cover' | 'monitoring' | 'identity-box' | 'editorial-split' | 'presentation';
 
 export type CoverBgColor = 'blue' | 'green' | 'orange' | 'darkBlue' | 'white' | 'charcoal' | 'custom';
 export type CreditsBgColor = 'gradient-blue' | 'gradient-green' | 'gradient-orange' | 'dark-slate' | 'pure-white' | 'custom';

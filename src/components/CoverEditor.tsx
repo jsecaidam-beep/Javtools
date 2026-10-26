@@ -1,3 +1,4 @@
+import {ModernCoverArtwork,MODERN_COVERS} from './ModernCoverArtwork';
 import { PagePreview } from './PagePreview';
 import { PAGE_FORMATS, PAGE_WIDTH } from '../constants/pageFormats';
 import { PageFormatSelector } from './PageFormatSelector';
@@ -11,6 +12,7 @@ import {
 import {
   AVAILABLE_PARTNER_LOGOS,
   PRELOADED_COVER_PHOTOS,
+  DEFAULT_LOGOS,
 } from '../constants/brandAssets';
 import { AchOfficialSvg, RhpfLogoSvg, DynamicLogoRenderer } from './AchLogos';
 import { downloadElementAsPng, copyElementAsPngToClipboard } from '../utils/canvasExport';
@@ -132,7 +134,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
   const updateField = (field: keyof CoverData, value: any) => {
     onChange({
       ...coverData,
-      [field]: value,
+      [field]: field==='logos'&&!value.some((l:LogoItem)=>l.type==='ach')?[...value,DEFAULT_LOGOS.find(l=>l.type==='ach')!]:value,
     });
   };
 
@@ -174,6 +176,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
   };
 
   const removeLogo = (id: string) => {
+    if(coverData.logos.find(l=>l.id===id)?.type==='ach')return;
     updateField('logos', coverData.logos.filter((l) => l.id !== id));
   };
 
@@ -241,7 +244,6 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
     });
   };
 
-  const isMoreThanThreeLogos = coverData.logos.length > 3;
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
@@ -252,10 +254,10 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
             <span className="p-1.5 rounded-lg bg-[#EE7203]/20 text-[#EE7203] border border-[#EE7203]/40">
               🎨
             </span>
-            Editor de Portadas Humanitarias (Estilo Canva)
+            Portadas con identidad
           </h2>
           <p className="text-xs text-slate-400 font-roboto">
-            Diseña la portada oficial con tipografía Futura, fotos de campo, switches de visibilidad y regla de 3 logotipos
+            Cuatro composiciones nuevas. Tu fotografía, el logo de ACH y los socios de tu proyecto.
           </p>
         </div>
 
@@ -405,6 +407,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                 <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Estilo de Maqueta de Portada
                 </label>
+                <div className="cover-style-picks">{MODERN_COVERS.map(style=><button key={style.id} aria-pressed={coverData.style===style.id} onClick={()=>updateField('style',style.id)}><b>{style.name}</b><span>{style.desc}</span></button>)}</div>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={() => updateField('style', 'monitoring')}
@@ -733,12 +736,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                   checked={coverData.showAuthorBlock !== false}
                   onChange={(val) => updateField('showAuthorBlock', val)}
                 />
-                <ToggleSwitch
-                  label="Barra de Logotipos"
-                  description="Logotipos institucionales de Acción contra el Hambre y socios"
-                  checked={coverData.showLogos !== false}
-                  onChange={(val) => updateField('showLogos', val)}
-                />
+                <p className="text-xs text-slate-400">ACH permanece visible. FHG está incluido inicialmente; puedes añadir o retirar logos de socios en la pestaña Logos.</p>
                 <ToggleSwitch
                   label="Fotografía Humanitaria"
                   description="Foto de campo o fondo corporativo institucional con marca de agua"
@@ -804,31 +802,12 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
           {/* Tab 3: Logos & Max 3 Rule */}
           {activeTab === 'logos' && (
             <div className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col gap-3.5 text-xs">
-              {/* Alert if more than 3 logos */}
-              {isMoreThanThreeLogos && (
-                <div className="p-3 rounded-xl bg-amber-950/80 border border-amber-500/80 text-amber-200 text-xs flex gap-2.5 animate-in slide-in-from-top-2">
-                  <AlertTriangle className="w-5 h-5 shrink-0 text-amber-400" />
-                  <div className="space-y-1">
-                    <span className="font-bold block text-amber-300">
-                      Recomendación de Identidad Visual (Máximo 3 Logotipos)
-                    </span>
-                    <p className="text-[11px] leading-relaxed">
-                      La guía oficial de Acción contra el Hambre recomienda un máximo de 3 logotipos para mantener la legibilidad y el equilibrio institucional. Si por razones contractuales necesitas incluir más organizaciones socias, consulta previamente con:
-                    </p>
-                    <a
-                      href="mailto:comunicacion@ca.acfspain.org"
-                      className="font-bold underline text-amber-300 block text-[11px]"
-                    >
-                      comunicacion@ca.acfspain.org
-                    </a>
-                  </div>
-                </div>
-              )}
+              <p className="text-xs text-slate-400">Los logos adicionales se distribuyen automáticamente. ACH permanece siempre visible y FHG viene incluido por defecto.</p>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[11px] font-bold text-slate-300">
-                    Logotipos Activos en la Portada ({coverData.logos.length}/3 recomendados)
+                    Logotipos Activos en la Portada ({coverData.logos.length})
                   </span>
                   <div>
                     <input
@@ -880,7 +859,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                       <button
                         onClick={() => removeLogo(logo.id)}
                         className="text-red-400 hover:text-red-300 p-1 shrink-0 ml-2"
-                        title="Quitar logotipo"
+                        disabled={logo.type==='ach'} title={logo.type==='ach'?'ACH permanece en la portada':'Quitar logotipo'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -1089,7 +1068,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
             style={{ width: PAGE_WIDTH, height: PAGE_FORMATS[coverData.pageFormat || 'carta'].height }}
           >
             {/* STYLE 1: INFORME DE MONITOREO (Screenshot 1 Reference) */}
-            {coverData.style === 'monitoring' ? (
+            {MODERN_COVERS.some(style=>style.id===coverData.style) ? <ModernCoverArtwork data={coverData}/> : coverData.style === 'monitoring' ? (
               <div className="flex-1 flex flex-col justify-between bg-white h-full">
                 {/* Top Section with dynamic background color */}
                 <div
@@ -1113,7 +1092,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                   }}
                 >
                   {/* Header Logos Bar */}
-                  {coverData.showLogos !== false && (
+                  {true && (
                     <div
                       className="flex items-center justify-between gap-3 pb-3 border-b flex-wrap"
                       style={{
@@ -1315,7 +1294,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                   </div>
 
                   {/* Bottom logos bar */}
-                  {coverData.showLogos !== false && (
+                  {true && (
                     <div className="flex items-center justify-between gap-3 pt-4 border-t border-slate-200 flex-wrap">
                       {coverData.logos.length > 0 ? (
                         coverData.logos.map((logo) => (

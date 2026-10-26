@@ -3,6 +3,7 @@ import { canvasToPngBlob, downloadBlob } from '../utils/canvasExport';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Chart,
+  Filler, RadarController, PolarAreaController, RadialLinearScale,
   BarController,
   BarElement,
   PieController,
@@ -34,7 +35,7 @@ import { TableData } from '../types/table';
 import { CHART_PRESETS_SAN } from '../constants/brandAssets';
 
 // Register Chart.js components
-Chart.register(
+Chart.register(Filler, RadarController, PolarAreaController, RadialLinearScale,
   BarController,
   BarElement,
   PieController,
@@ -55,7 +56,7 @@ interface ChartPanelProps {
   onNavigateToTables?: () => void;
 }
 
-type ChartType = 'bar' | 'horizontalBar' | 'stackedBar' | 'pie' | 'doughnut';
+type ChartType = 'bar' | 'horizontalBar' | 'stackedBar' | 'pie' | 'doughnut' | 'line' | 'area' | 'radar' | 'polarArea';
 
 const ACH_PALETTE = [
   '#005FB6', // Azul ACH
@@ -80,6 +81,8 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
   const [selectedPresetId, setSelectedPresetId] = useState<string>('');
   const [labelColIndex, setLabelColIndex] = useState<number>(tableData.chartLabelCol ?? 0);
   const [valueColIndex, setValueColIndex] = useState<number>(tableData.chartValueCols?.[0] ?? 1);
+  const [visualStyle,setVisualStyle]=useState('institutional');
+  const palettes:Record<string,string[]>={institutional:ACH_PALETTE,ocean:['#005FB6','#008AA6','#63B6CE','#003E7E','#8EB8DB'],pastel:['#699BCA','#96C780','#EAB47F','#A6B8CB','#82C4C4'],forest:['#286B32','#52AE32','#94C45D','#005FB6','#AECFA0']};
   const [copiedImage, setCopiedImage] = useState<boolean>(false);
   const [includeTotalRow, setIncludeTotalRow] = useState<boolean>(false);
   const [useCustomPresetData, setUseCustomPresetData] = useState<any | null>(null);
@@ -162,7 +165,14 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
     const { labels, datasets } = getRenderData();
     const isHorizontal = chartType === 'horizontalBar';
     const isStacked = chartType === 'stackedBar';
-    const baseType = isHorizontal || isStacked ? 'bar' : chartType;
+    const baseType = isHorizontal || isStacked ? 'bar' : chartType==='area'?'line':chartType;
+    const radial=baseType==='radar'||baseType==='polarArea';
+    const palette=palettes[visualStyle];
+    const styledDatasets=datasets.map((dataset:any,index:number)=>({...dataset,
+      ...(visualStyle!=='institutional'?{backgroundColor:datasets.length>1?palette[index%palette.length]:labels.map((_:unknown,i:number)=>palette[i%palette.length])}:{}),
+      ...(baseType==='line'||baseType==='radar'?{borderColor:palette[index%palette.length],backgroundColor:palette[index%palette.length]+'35',pointBackgroundColor:palette[index%palette.length],pointRadius:4,borderWidth:3,tension:.3,fill:chartType==='area'||baseType==='radar'}:{}),
+      borderRadius:baseType==='bar'?8:0,
+    }));
 
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
@@ -171,7 +181,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
       type: baseType,
       data: {
         labels,
-        datasets,
+        datasets:styledDatasets,
       },
       options: {
         indexAxis: isHorizontal ? 'y' : 'x',
@@ -180,7 +190,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
         maintainAspectRatio: false,
         plugins: {
           legend: {
-            display: baseType === 'pie' || baseType === 'doughnut' || datasets.length > 1,
+            display: baseType === 'pie' || baseType === 'doughnut' || baseType==='polarArea' || datasets.length > 1,
             position: 'bottom',
             labels: {
               color: '#374c5e',
@@ -208,7 +218,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
           },
         },
         scales:
-          baseType === 'pie' || baseType === 'doughnut'
+          baseType === 'pie' || baseType === 'doughnut' || radial
             ? {}
             : {
                 x: {
@@ -242,7 +252,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
         chartInstanceRef.current.destroy();
       }
     };
-  }, [tableData, chartType, labelColIndex, valueColIndex, includeTotalRow, useCustomPresetData]);
+  }, [tableData, chartType, labelColIndex, valueColIndex, includeTotalRow, useCustomPresetData,visualStyle]);
 
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -298,10 +308,10 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2 font-futura">
-              Módulo de Gráficas Oficiales ACH
+              Gráficas con identidad ACH
             </h2>
             <p className="text-xs text-slate-400 font-roboto">
-              Modelos de la Evaluación de Seguridad Alimentaria (Barras apiladas CARI, HDDS departamental y donas)
+              Nueve tipos de gráfica y cuatro paletas para presentar tus datos.
             </p>
           </div>
         </div>
@@ -375,44 +385,7 @@ export const ChartPanel: React.FC<ChartPanelProps> = ({ tableData, onNavigateToT
           <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
             Tipo de Gráfico
           </label>
-          <div className="grid grid-cols-4 gap-1">
-            <button
-              onClick={() => setChartType('bar')}
-              className={`p-2 rounded flex items-center justify-center transition ${
-                chartType === 'bar' ? 'bg-[#005FB6] text-white font-bold shadow' : 'bg-slate-700/60 text-slate-300'
-              }`}
-              title="Barras Verticales"
-            >
-              <BarChart3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setChartType('horizontalBar')}
-              className={`p-2 rounded flex items-center justify-center transition rotate-90 ${
-                chartType === 'horizontalBar' ? 'bg-[#005FB6] text-white font-bold shadow' : 'bg-slate-700/60 text-slate-300'
-              }`}
-              title="Barras Horizontales por Departamento"
-            >
-              <BarChart3 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setChartType('stackedBar')}
-              className={`p-2 rounded flex items-center justify-center transition ${
-                chartType === 'stackedBar' ? 'bg-[#52AE32] text-white font-bold shadow' : 'bg-slate-700/60 text-slate-300'
-              }`}
-              title="Barras 100% Apiladas (CARI)"
-            >
-              <Layers className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setChartType('doughnut')}
-              className={`p-2 rounded flex items-center justify-center transition ${
-                chartType === 'doughnut' ? 'bg-[#EE7203] text-white font-bold shadow' : 'bg-slate-700/60 text-slate-300'
-              }`}
-              title="Dona / Circular"
-            >
-              <PieChart className="w-4 h-4" />
-            </button>
-          </div>
+          <select aria-label="Tipo de gráfica" value={chartType} onChange={e=>setChartType(e.target.value as ChartType)} className="w-full rounded-lg border border-slate-300 p-2 text-slate-800 bg-white">{[['bar','Barras verticales'],['horizontalBar','Barras horizontales'],['stackedBar','Barras apiladas'],['pie','Circular'],['doughnut','Dona'],['line','Líneas'],['area','Área suave'],['radar','Radar'],['polarArea','Área polar']].map(([id,label])=><option key={id} value={id}>{label}</option>)}</select><label className="block mt-3 text-slate-500">Estilo visual<select aria-label="Estilo visual de gráfica" value={visualStyle} onChange={e=>setVisualStyle(e.target.value)} className="w-full rounded-lg border border-slate-300 p-2 text-slate-800 bg-white mt-1"><option value="institutional">Institucional ACH</option><option value="ocean">Océano</option><option value="pastel">Pastel editorial</option><option value="forest">Bosque</option></select></label>
         </div>
 
         {/* Labels Column Selector */}
