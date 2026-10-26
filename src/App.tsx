@@ -11,12 +11,16 @@ import { TableEditor } from './components/TableEditor';
 import { ChartPanel } from './components/ChartPanel';
 import { CoverEditor } from './components/CoverEditor';
 import { CreditsEditor } from './components/CreditsEditor';
+import { StoriesEditor } from './components/StoriesEditor';
+import { RecruitmentEditor } from './components/RecruitmentEditor';
 import { InvitationEditor } from './components/InvitationEditor';
 import { ExportModal } from './components/ExportModal';
 import { FileCheck, Sparkles, ShieldCheck, HeartHandshake } from 'lucide-react';
 
 const VIEW_HASHES: Record<NavView, string> = {
   home: 'inicio',
+  recruitment: 'convocatorias',
+  stories: 'historias',
   tables: 'tablas',
   charts: 'graficas',
   covers: 'portadas',
@@ -58,6 +62,7 @@ export default function App() {
       window.history.pushState(null, '', nextHash);
     }
     setCurrentView(view);
+    window.scrollTo({top:0,behavior:'instant'});
   };
 
   const showToast = (msg: string) => {
@@ -103,7 +108,8 @@ export default function App() {
   };
 
   return (
-    <div className="ach-app min-h-screen bg-[#f3f7fa] text-slate-900 flex flex-col selection:bg-[#005FB6] selection:text-white font-roboto">
+    <div className="ach-app javtools-prototype min-h-screen bg-[#f3f7fa] text-slate-900 flex flex-col selection:bg-[#005FB6] selection:text-white font-roboto">
+      <div className="studio-ambient" aria-hidden="true"><i/><i/><i/></div>
       {/* Main Navigation */}
       <Navbar
         currentView={currentView}
@@ -118,6 +124,8 @@ export default function App() {
 
       {/* Workspace Body */}
       <main className="relative z-10 flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-6">
+        {currentView === 'stories' && <StoriesEditor />}
+        {currentView === 'recruitment' && <RecruitmentEditor />}
         {/* VIEW 1: HOME HUB */}
         {currentView === 'home' && (
           <HomeHub onNavigate={handleNavigate} />
@@ -142,7 +150,7 @@ export default function App() {
                     </span>
                   </div>
                   <p className="text-xs sm:text-sm text-slate-300 mt-0.5 font-roboto">
-                    Pega datos con IA Gemini, edita celdas directamente y copia tablas perfectamente acopladas a Microsoft Word.
+                    Pega datos desde Word, Excel o CSV, edita las celdas y copia la tabla a tu documento.
                   </p>
                 </div>
               </div>
@@ -207,17 +215,7 @@ export default function App() {
         {currentView === 'invitations' && <InvitationEditor />}
       </main>
 
-      {/* Corporate Footer */}
-      <footer className="w-full border-t border-slate-800/80 glass-panel py-4 px-6 text-center text-xs text-slate-400 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-slate-200 font-futura">Acción contra el Hambre</span>
-            <span>•</span>
-            <span className="font-roboto">Herramienta de Documentos Humanitarios (Guatemala & Centroamérica)</span>
-          </div>
-          <span className="text-[11px]">Seguridad alimentaria · Nutrición · Acción humanitaria</span>
-        </div>
-      </footer>
+      <footer className="studio-footer"><button onClick={()=>handleNavigate('home')} className="footer-brand">javtools</button><p>Pequeñas herramientas.<br/>Más espacio para tus ideas.</p><span>Creado para comunicar con identidad ACH.<br/><small>Prototipo local · Diseño para revisión</small></span></footer>
 
       {/* Standalone HTML Code Modal */}
       <ExportModal

@@ -118,10 +118,7 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
   onChange,
   onNavigateToCredits,
 }) => {
-  const [activeTab, setActiveTab] = useState<'content' | 'elements' | 'photo' | 'logos' | 'colors' | 'ai'>('content');
-  const [assistantNotice, setAssistantNotice] = useState<string | null>(null);
-  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
-  const [aiTopic, setAiTopic] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<'content' | 'elements' | 'photo' | 'logos' | 'colors'>('content');
   const [copiedImage, setCopiedImage] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
@@ -191,58 +188,6 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
     reader.readAsDataURL(file);
   };
 
-  // Call AI Assistant for Cover
-  const handleGenerateAiCover = async () => {
-    setIsAiLoading(true);
-    try {
-      const res = await fetch('/api/ai/cover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topic: aiTopic || coverData.title,
-          context: coverData.subtitle,
-          documentType: coverData.categoryPill,
-        }),
-      });
-      if (!res.ok) throw new Error("Servicio de asistencia no disponible");
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || "Servicio de asistencia no disponible");
-      setAssistantNotice(json.aiGenerated ? "Propuesta generada con IA. Revisa los datos antes de exportar." : "Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
-      if (json.success && json.data) {
-        onChange({
-          ...coverData,
-          categoryPill: json.data.documentCategory || coverData.categoryPill,
-          title: json.data.title || coverData.title,
-          subtitle: json.data.subtitle || coverData.subtitle,
-          projectCode: json.data.projectCode || coverData.projectCode,
-          internalCode: json.data.internalCode || coverData.internalCode,
-          location: json.data.location || coverData.location,
-          authorName: json.data.authorName || coverData.authorName,
-          authorRole: json.data.authorRole || coverData.authorRole,
-          authorBase: json.data.authorBase || coverData.authorBase,
-        });
-      }
-    } catch (e) {
-      setAssistantNotice("Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
-      console.warn('AI cover API unreachable, applying local smart generator:', e);
-      const cleanTitle = (aiTopic || coverData.title || 'RESPUESTA HUMANITARIA Y SEGURIDAD ALIMENTARIA').toUpperCase();
-      onChange({
-        ...coverData,
-        title: cleanTitle,
-        categoryPill: 'INFORME DE ACOMPAÑAMIENTO, MONITOREO Y SUPERVISIÓN',
-        subtitle: `Acciones de asistencia humanitaria y nutricional en municipios priorizados. ${aiTopic || ''}`.trim(),
-        projectCode: coverData.projectCode,
-        internalCode: coverData.internalCode,
-        location: coverData.location,
-        authorName: coverData.authorName || 'Equipo Técnico Humanitario',
-        authorRole: coverData.authorRole,
-        authorBase: coverData.authorBase,
-      });
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
   // Export / Copy Cover as high-resolution PNG
   const handleCopyCoverImage = async () => {
     if (!coverCanvasRef.current) return;
@@ -300,7 +245,6 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-      {assistantNotice && <p role="status" className="glass-panel p-3 rounded-xl text-sm text-slate-600">{assistantNotice}</p>}
       {/* Top Banner / Actions Bar */}
       <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
         <div>
@@ -435,15 +379,6 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
             >
               <Palette className="w-3 h-3 text-sky-300" />
               <span>Color</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('ai')}
-              className={`py-2 px-1 rounded-lg transition flex items-center justify-center gap-1 ${
-                activeTab === 'ai' ? 'bg-[#EE7203] text-white shadow' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Sparkles className="w-3 h-3 text-amber-300" />
-              <span>IA</span>
             </button>
           </div>
 
@@ -1131,36 +1066,6 @@ export const CoverEditor: React.FC<CoverEditorProps> = ({
                   />
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Tab 5: AI Assistant */}
-          {activeTab === 'ai' && (
-            <div className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col gap-3.5 text-xs">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span className="font-bold text-white font-futura">Asistente IA para Portadas</span>
-              </div>
-              <p className="text-slate-300 text-[11px] font-roboto">
-                Indica de qué trata tu informe y Gemini generará los textos, títulos y códigos con el estilo y tono oficial de Acción contra el Hambre.
-              </p>
-
-              <textarea
-                rows={3}
-                value={aiTopic}
-                onChange={(e) => setAiTopic(e.target.value)}
-                placeholder="ej: Informe de monitoreo de agua potable y filtros comunitarios en Jocotán y Camotán, financiado por ECHO..."
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-[#EE7203]"
-              />
-
-              <button
-                onClick={handleGenerateAiCover}
-                disabled={isAiLoading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#EE7203] to-[#C45B00] hover:opacity-95 text-white font-bold text-xs shadow-lg flex items-center justify-center gap-2 transition disabled:opacity-50"
-              >
-                <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>{isAiLoading ? 'Generando con Gemini...' : 'Generar Portada con IA'}</span>
-              </button>
             </div>
           )}
         </div>

@@ -39,10 +39,7 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [downloadSuccess, setDownloadSuccess] = useState<boolean>(false);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [assistantNotice, setAssistantNotice] = useState<string | null>(null);
-  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
-  const [donorInput, setDonorInput] = useState<string>('Fondo Humanitario Regional (RHPF LAC)');
-  const [activeSubTab, setActiveSubTab] = useState<'text' | 'contributors' | 'colors' | 'ai'>('contributors');
+  const [activeSubTab, setActiveSubTab] = useState<'text' | 'contributors' | 'colors'>('contributors');
   const [quickPasteOpen, setQuickPasteOpen] = useState<boolean>(false);
   const [quickPasteText, setQuickPasteText] = useState<string>('');
 
@@ -107,62 +104,6 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
     setQuickPasteOpen(false);
   };
 
-  // AI Assistant for Credits
-  const handleGenerateAiCredits = async () => {
-    setIsAiLoading(true);
-    try {
-      const res = await fetch('/api/ai/credits', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          donor: donorInput,
-          projectTitle: creditsData.topBanner,
-          countries: 'Guatemala y Honduras',
-          currentAuthors: (creditsData.contributors || []).map((c) => c.name).join(', '),
-        }),
-      });
-      if (!res.ok) throw new Error("Servicio de asistencia no disponible");
-      const json = await res.json();
-      if (!json.success) throw new Error(json.error || "Servicio de asistencia no disponible");
-      setAssistantNotice(json.aiGenerated ? "Propuesta generada con IA. Revisa los datos antes de exportar." : "Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
-      if (json.success && json.data) {
-        const aiContributors = Array.isArray(json.data.contributors)
-          ? json.data.contributors.map((c: any, i: number) => ({
-              id: `ai-c-${Date.now()}-${i}`,
-              name: c.name || `Autor ${i + 1}`,
-              role: c.role || 'Equipo de Proyecto',
-            }))
-          : creditsData.contributors;
-
-        onChange({
-          ...creditsData,
-          topBanner: json.data.topBanner || creditsData.topBanner,
-          subBanner: json.data.subBanner || creditsData.subBanner,
-          donorAttribution: json.data.donorAttribution || creditsData.donorAttribution,
-          disclaimer: json.data.disclaimer || creditsData.disclaimer,
-          officeGuatemalaAddress: json.data.officeGuatemala || creditsData.officeGuatemalaAddress,
-          officeHondurasAddress: json.data.officeHonduras || creditsData.officeHondurasAddress,
-          pqrEmail: json.data.pqrEmail || creditsData.pqrEmail,
-          commsEmail: json.data.commsEmail || creditsData.commsEmail,
-          webUrl: json.data.webUrl || creditsData.webUrl,
-          contributorsTitle: json.data.contributorsTitle || creditsData.contributorsTitle || 'EQUIPO TÉCNICO Y REDACCIÓN',
-          showPersonCredits: true,
-          contributors: aiContributors && aiContributors.length > 0 ? aiContributors : creditsData.contributors,
-        });
-      }
-    } catch (e) {
-      setAssistantNotice("Propuesta local; IA no disponible. Se conservan tus datos de proyecto y autores.");
-      console.warn('AI credits error, applying local smart generator:', e);
-      onChange({
-        ...creditsData,
-        donorAttribution: `Proyecto implementado por Fundación Acción contra el Hambre, con el apoyo financiero de ${donorInput || 'RHPF LAC'}.`,
-        disclaimer: 'El contenido de este material es responsabilidad exclusiva de Acción contra el Hambre y no necesariamente refleja las opiniones, posiciones o políticas del donante.',
-      });
-    } finally {
-      setIsAiLoading(false);
-    }
-  };
-
   // Copy Credits as high-resolution PNG
   const handleCopyCreditsImage = async () => {
     if (!creditsCanvasRef.current) return;
@@ -205,7 +146,6 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-      {assistantNotice && <p role="status" className="glass-panel p-3 rounded-xl text-sm text-slate-600">{assistantNotice}</p>}
       {/* Top Banner / Actions Bar */}
       <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-white/10">
         <div className="flex items-center gap-3">
@@ -367,15 +307,6 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
             >
               <Palette className="w-3.5 h-3.5 text-sky-300" />
               <span>Color</span>
-            </button>
-            <button
-              onClick={() => setActiveSubTab('ai')}
-              className={`py-2 rounded-lg transition flex items-center justify-center gap-1 ${
-                activeSubTab === 'ai' ? 'bg-[#EE7203] text-white shadow' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>IA</span>
             </button>
           </div>
 
@@ -902,41 +833,6 @@ export const CreditsEditor: React.FC<CreditsEditorProps> = ({
                   />
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* TAB 4: AI ASSISTANT */}
-          {activeSubTab === 'ai' && (
-            <div className="glass-panel p-4 rounded-xl border border-white/10 flex flex-col gap-3.5 text-xs">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                <span className="font-bold text-white font-futura">Redactor IA de Créditos y Autores</span>
-              </div>
-              <p className="text-slate-300 text-[11px] font-roboto">
-                Genera automáticamente las atribuciones correctas de marca, cláusulas de responsabilidad y sugerencias de cargos técnicos humanitarios.
-              </p>
-
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 block mb-1">
-                  Nombre del Donante / Fondo:
-                </label>
-                <input
-                  type="text"
-                  value={donorInput}
-                  onChange={(e) => setDonorInput(e.target.value)}
-                  placeholder="ej: Fondo Humanitario Regional (RHPF LAC) o ECHO / AECID..."
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white text-xs focus:outline-none focus:border-[#EE7203]"
-                />
-              </div>
-
-              <button
-                onClick={handleGenerateAiCredits}
-                disabled={isAiLoading}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#EE7203] to-[#C45B00] hover:opacity-95 text-white font-bold text-xs shadow-lg flex items-center justify-center gap-2 transition disabled:opacity-50"
-              >
-                <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>{isAiLoading ? 'Redactando con Gemini...' : 'Redactar Créditos con IA'}</span>
-              </button>
             </div>
           )}
         </div>

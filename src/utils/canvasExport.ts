@@ -85,6 +85,8 @@ async function renderElement(element: HTMLElement, options?: ExportPngOptions): 
       // Preview zoom is for the editor only; capture the full page at 1:1.
       const preview = clone.closest<HTMLElement>('[data-preview-transform]');
       if (preview) preview.style.transform = 'none';
+      const viewport = clone.closest<HTMLElement>('[data-preview-viewport]');
+      if (viewport) { viewport.style.overflow = 'visible'; viewport.style.height = 'auto'; viewport.style.filter = 'none'; }
       clone.style.width = `${width}px`;
       clone.style.minWidth = `${width}px`;
       clone.style.maxWidth = `${width}px`;
@@ -171,4 +173,9 @@ export async function copyElementAsPngToClipboard(element: HTMLElement, options?
   const png = renderElement(element, options).then(canvasToPngBlob).then(blob => element.dataset.exportHeight ? setPrintDpi(blob, 300) : blob);
   await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
   return true;
+}
+
+export async function elementAsPngBlob(element: HTMLElement, options?: ExportPngOptions): Promise<Blob> {
+  const blob = await canvasToPngBlob(await renderElement(element, options));
+  return element.dataset.exportHeight ? await setPrintDpi(blob, 300) : blob;
 }

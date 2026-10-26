@@ -1,297 +1,41 @@
-import React from 'react';
-import {
-  Table2,
-  BarChart3,
-  BookOpen,
-  FileCheck2,
-  Sparkles,
-  ArrowRight,
-  ShieldCheck,
-  Layers,
-  Palette,
-  CheckCircle2,
-  Mail,
-} from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Search, ArrowUpRight, ArrowRight, Table2, BarChart3, BookOpen, FileCheck2, Mail, Sparkles, Star, X, Check, Command } from 'lucide-react';
 import type { NavView } from './Navbar';
 
-interface HomeHubProps {
-  onNavigate: (view: Exclude<NavView, 'home'>) => void;
-}
+type ToolView = Exclude<NavView,'home'>;
+const tools: {id:ToolView;name:string;tag:string;desc:string;category:string;color:string;Icon:typeof Mail}[] = [
+ {id:'stories',name:'Historias',tag:'Tu proyecto, en movimiento.',desc:'Foto o video, cuatro marcos, logos adaptables y flotación suave.',category:'Eventos',color:'lilac',Icon:Sparkles},
+ {id:'recruitment',name:'Convocatorias',tag:'Talento que transforma vidas.',desc:'Guatemala y Honduras. Foto propia, logos adaptables y QR sin caducidad.',category:'Documentos',color:'mint',Icon:FileCheck2},
+ {id:'invitations',name:'Invitaciones',tag:'De un evento a una invitación.',desc:'Fechas, lugares y personas. Todo en una pieza lista para compartir.',category:'Eventos',color:'mint',Icon:Mail},
+ {id:'covers',name:'Portadas',tag:'La primera impresión importa.',desc:'Dale a tus informes una entrada visual con la identidad de ACH.',category:'Documentos',color:'blue',Icon:BookOpen},
+ {id:'charts',name:'Gráficas',tag:'Tus datos tienen algo que contar.',desc:'Convierte cifras en gráficas claras y llévalas a tus documentos.',category:'Datos',color:'peach',Icon:BarChart3},
+ {id:'tables',name:'Tablas',tag:'Del dato al documento.',desc:'Edita, organiza y copia a Word o Excel con el formato preparado.',category:'Datos',color:'lilac',Icon:Table2},
+ {id:'credits',name:'Créditos',tag:'Cada contribución, en su lugar.',desc:'Completa tus publicaciones con créditos, contactos y atribuciones.',category:'Documentos',color:'sky',Icon:FileCheck2},
+];
+const MiniArtwork = ({type}:{type:ToolView}) => {
+ if(type==='stories')return <div className="mini-paper invite-paper"><div className="paper-kicker">HISTORIAS / 9:16</div><h4>Historias<br/>que mueven<br/>el mundo.</h4><div className="invite-name">FOTO + VIDEO + MOVIMIENTO</div><div className="paper-bottom">4 MARCOS · TU PROYECTO · ACH</div></div>;
+ if(type==='recruitment')return <div className="mini-paper invite-paper"><div className="paper-kicker">CONVOCATORIA ABIERTA / ACH</div><h4>Tu talento.<br/>Nuestro próximo<br/>gran cambio.</h4><div className="invite-name">GUATEMALA + HONDURAS ↗</div><div className="paper-bottom">FOTO · LOGOS · QR · IA LOCAL</div></div>;
+ if(type==='charts') return <div className="mini-chart"><div className="chart-note">Seguridad alimentaria <span>↗</span></div><div className="chart-bars">{[48,77,58,91,67,83].map((h,i)=><div key={i} style={{height:`${h}%`,animationDelay:`${i*.12}s`}}><span>{h}</span></div>)}</div><div className="chart-labels"><span>01</span><span>02</span><span>03</span><span>04</span><span>05</span><span>06</span></div><div className="chart-caption"><i/> Datos de ejemplo</div></div>;
+ if(type==='tables') return <div className="mini-table"><div className="table-title">Resumen de intervención <span>↗</span></div><div className="table-row head"><span>Municipio</span><span>Familias</span><span>Avance</span></div>{['Municipio A','Municipio B','Municipio C','Municipio D'].map((n,i)=><div className="table-row" key={n}><span>{n}</span><span>{[120,85,142,96][i]}</span><span><i style={{width:`${[62,43,80,55][i]}%`}}/></span></div>)}<small>DATOS DE EJEMPLO</small></div>;
+ if(type==='credits')return <div className="mini-credits"><div className="paper-kicker">ACCIÓN CONTRA EL HAMBRE</div><h4>Las personas<br/>detrás de la acción.</h4><div className="credit-lines"><span>Coordinación</span><i/><span>Equipo técnico</span><i/><span>Comunicación</span><i/></div><div className="paper-bottom">CRÉDITOS · DOCUMENTO DE EJEMPLO</div></div>;
+ return <div className={`mini-paper ${type==='invitations'?'invite-paper':'cover-paper'}`}><div className="paper-kicker">{type==='invitations'?'ESTÁS INVITADO/A':'ACCIÓN CONTRA EL HAMBRE'}</div><h4>{type==='invitations'?<>Nos encontramos<br/>para transformar.</>:<>Acciones<br/>que abren<br/>oportunidades.</>}</h4>{type==='invitations'?<><div className="invite-name">Un espacio para compartir</div><div className="invite-date"><span>27<small>NOVIEMBRE</small></span><span>10:00<small>DE LA MAÑANA</small></span></div></>:<><div className="cover-cut"><div/><div/><div/></div><span className="cover-sub">INFORME DE ACTIVIDADES<br/>GUATEMALA · 2026</span></>}<div className="paper-bottom">PROTOTIPO · CONTENIDO DE EJEMPLO <span>↗</span></div></div>;
+};
 
-export const HomeHub: React.FC<HomeHubProps> = ({ onNavigate }) => {
-  return (
-    <div className="flex flex-col gap-8 py-4 animate-in fade-in duration-300">
-      {/* Hero Welcome Banner */}
-      <div className="ach-hero relative overflow-hidden glass-panel rounded-3xl p-6 sm:p-10 border border-white/15 shadow-2xl bg-gradient-to-br from-slate-900/90 via-[#005FB6]/15 to-slate-900/90">
-        <div className="relative z-10 max-w-3xl flex flex-col gap-4">
-          <div className="flex items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full bg-[#52AE32]/20 border border-[#52AE32]/40 text-[#52AE32] text-xs font-bold uppercase tracking-wider font-futura">
-              Herramientas de comunicación • Acción contra el Hambre
-            </span>
-            <span className="hidden sm:inline text-xs text-slate-400 font-mono">
-              Guía de Identidad & CARI
-            </span>
-          </div>
-
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight font-futura">
-            ¿Qué deseas crear para tu documento humanitario?
-          </h1>
-
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed font-roboto">
-            Genera tablas para Microsoft Word, gráficas oficiales (CARI/SAN), portadas, hojas de créditos e invitaciones con la identidad visual de Acción contra el Hambre. Personaliza cada pieza y descarga el resultado desde el editor.
-          </p>
-
-          <div className="flex flex-wrap items-center gap-4 pt-2 text-xs text-slate-300">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#52AE32]" />
-              <span>Tipografía Futura & Roboto</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#005FB6]" />
-              <span>Colores Oficiales ACH</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#EE7203]" />
-              <span>Logos del proyecto</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>Edición y asistencia de textos</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative corner watermark */}
-        <div className="absolute right-[-20px] bottom-[-30px] opacity-10 pointer-events-none select-none">
-          <div className="w-64 h-64 rounded-full border-[28px] border-[#005FB6]" />
-        </div>
-      </div>
-
-      {/* Interactive Feature Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Card 1: Tablas Humanitarias */}
-        <div
-          onClick={() => onNavigate('tables')}
-          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-[#005FB6]/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#005FB6]/20 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#005FB6]/20 border border-[#005FB6]/40 flex items-center justify-center text-[#005FB6] group-hover:scale-110 transition-transform">
-                <Table2 className="w-6 h-6 text-sky-400" />
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
-                Word & Office Ready
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-sky-300 transition-colors">
-              1. Generador de Tablas ACH
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
-              Crea cuadros con el diseño exacto de los informes humanitarios: desgloses geográficos con celdas agrupadas (*rowspan*), matrices CARI con semaforización y copiado con estilos *inline* que se acoplan perfectamente al ancho de hoja en Word.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
-                Criterios SAN
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                Países & Municipios
-              </span>
-              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                Barras en Celdas
-              </span>
-              <span className="text-[10px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
-                Extracción IA
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <span className="text-xs font-bold text-[#005FB6] group-hover:text-sky-300 flex items-center gap-1">
-              Abrir Generador de Tablas <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </div>
-        </div>
-
-        {/* Card 2: Gráficas Humanitarias */}
-        <div
-          onClick={() => onNavigate('charts')}
-          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-[#52AE32]/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#52AE32]/20 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#52AE32]/20 border border-[#52AE32]/40 flex items-center justify-center text-[#52AE32] group-hover:scale-110 transition-transform">
-                <BarChart3 className="w-6 h-6 text-emerald-400" />
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
-                Chart.js & Export PNG
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-emerald-300 transition-colors">
-              2. Módulo de Gráficas ACH
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
-              Diseña gráficas inspiradas en la Evaluación de Seguridad Alimentaria: barras 100% apiladas para severidad CARI, barras horizontales por departamento coloreadas por país, comparativas de encuestas y donas de cooperación.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                Barras 100% Apiladas
-              </span>
-              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
-                HDDS Departamental
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                Donas & Pies
-              </span>
-              <span className="text-[10px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
-                Copiar como Imagen
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <span className="text-xs font-bold text-[#52AE32] group-hover:text-emerald-300 flex items-center gap-1">
-              Abrir Módulo de Gráficas <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </div>
-        </div>
-
-        {/* Card 3: Editor de Portadas Humanitarias */}
-        <div
-          onClick={() => onNavigate('covers')}
-          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-[#EE7203]/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#EE7203]/20 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#EE7203]/20 border border-[#EE7203]/40 flex items-center justify-center text-[#EE7203] group-hover:scale-110 transition-transform">
-                <BookOpen className="w-6 h-6 text-amber-400" />
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
-                Editor Tipo Canva
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-amber-300 transition-colors">
-              3. Editor de Portadas Humanitarias
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
-              Crea portadas profesionales de alto impacto como las de los informes de monitoreo y guías de identidad. Personaliza textos en Futura, sube fotos de campo, configura píldoras de estado y gestiona los logotipos según la norma institucional de máx. 3 marcas.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              <span className="text-[10px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
-                Píldora & Título Futura
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                Subir / Elegir Fotos
-              </span>
-              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
-                Regla 3 Logos
-              </span>
-              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                Asistente IA Títulos
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <span className="text-xs font-bold text-[#EE7203] group-hover:text-amber-300 flex items-center gap-1">
-              Crear Portada de Informe <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </div>
-        </div>
-
-        {/* Card 4: Páginas de Créditos & Contraportadas */}
-        <div
-          onClick={() => onNavigate('credits')}
-          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-sky-400/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-sky-400/20 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
-                <FileCheck2 className="w-6 h-6 text-sky-300" />
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
-                Contraportada Oficial
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-sky-300 transition-colors">
-              4. Hojas de Créditos & Contraportadas
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
-              Genera la contraportada azul corporativa de ACH con marcas de agua del isotipo, cláusula de descargo de responsabilidad oficial de donantes (RHPF LAC, ECHO, etc.), contactos de oficinas de país y buzones PQR autorizados.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
-                Fondo Azul Degradado
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                Descargos de Donante
-              </span>
-              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                Buzón PQR
-              </span>
-              <span className="text-[10px] bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-800">
-                Redacción IA
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <span className="text-xs font-bold text-sky-400 group-hover:text-sky-300 flex items-center gap-1">
-              Generar Hoja de Créditos <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </div>
-        </div>
-
-        {/* Card 5: Invitaciones editables */}
-        <button
-          type="button"
-          onClick={() => onNavigate('invitations')}
-          className="group relative glass-panel rounded-2xl p-6 border border-white/10 hover:border-[#005FB6]/60 transition-all duration-300 cursor-pointer shadow-xl hover:shadow-2xl hover:shadow-[#005FB6]/20 flex flex-col justify-between text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#005FB6]"
-        >
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-xl bg-[#005FB6]/20 border border-[#005FB6]/40 flex items-center justify-center text-sky-400 group-hover:scale-110 transition-transform">
-                <Mail className="w-6 h-6" />
-              </div>
-              <span className="text-[11px] font-bold text-slate-400 bg-slate-800/80 px-2.5 py-1 rounded-full border border-slate-700">
-                Vista previa & PNG
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 font-futura group-hover:text-sky-300 transition-colors">
-              5. Invitaciones para inauguraciones
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-300 mb-4 leading-relaxed font-roboto">
-              Prepara invitaciones con el fondo de los rótulos y los logos de FHG y Acción contra el Hambre. Edita destinatario, cargo, fecha, hora y lugar; oculta los campos que no necesites y el diseño se ajusta al contenido.
-            </p>
-
-            <div className="flex flex-wrap gap-1.5 mb-6">
-              <span className="text-[10px] bg-sky-950/80 text-sky-300 px-2 py-0.5 rounded border border-sky-800">
-                Campos opcionales
-              </span>
-              <span className="text-[10px] bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800">
-                Ajuste automático
-              </span>
-              <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded">
-                Logo FHG
-              </span>
-            </div>
-          </div>
-
-          <span className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <span className="text-xs font-bold text-[#005FB6] group-hover:text-sky-300 flex items-center gap-1">
-              Crear Invitación <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </span>
-          </span>
-        </button>
-      </div>
-    </div>
-  );
+export const HomeHub: React.FC<{onNavigate:(view:ToolView)=>void}> = ({onNavigate}) => {
+ const [query,setQuery]=useState('');const [category,setCategory]=useState('Todas');const [featured,setFeatured]=useState<ToolView>('invitations');
+ const [favorites,setFavorites]=useState<string[]>(()=>{try{return JSON.parse(localStorage.getItem('javtools-prototype-favorites')||'[]')}catch{return []}});
+ const searchRef=useRef<HTMLInputElement>(null);
+ useEffect(()=>{const handler=(e:KeyboardEvent)=>{if(e.key==='/'&&!['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement).tagName)&&!(e.target as HTMLElement).isContentEditable){e.preventDefault();searchRef.current?.focus();document.getElementById('herramientas')?.scrollIntoView({behavior:'smooth'})}};document.addEventListener('keydown',handler);return()=>document.removeEventListener('keydown',handler)},[]);
+ const toggle=(id:string)=>{const next=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];setFavorites(next);try{localStorage.setItem('javtools-prototype-favorites',JSON.stringify(next))}catch{}};
+ const filtered=tools.filter(t=>(category==='Todas'||category==='Favoritas'&&favorites.includes(t.id)||t.category===category)&&`${t.name} ${t.desc} ${t.category}`.toLowerCase().includes(query.toLowerCase()));
+ const current=tools.find(t=>t.id===featured)!;
+ return <div className="studio-home">
+  <section className="studio-hero"><div className="hero-note"><i/> TU ESPACIO PARA CREAR · IDENTIDAD ACH</div><div className="hero-float float-one" aria-hidden="true"><Table2 size={20}/><span>El formato, resuelto.</span><Check size={15}/></div><div className="hero-float float-two" aria-hidden="true"><Sparkles size={19}/><span>Una idea. Muchas posibilidades.</span></div><h1>Menos formato.<br/>Más <span className="ideas-word">ideas<span className="word-spark">✳</span></span>.</h1><p>Pequeñas herramientas para darle forma a tu trabajo.<br/>Crea, personaliza y comparte con la identidad de ACH.</p><div className="hero-buttons"><button className="studio-primary" onClick={()=>document.getElementById('herramientas')?.scrollIntoView({behavior:'smooth'})}><span className="four-dots">⠿</span> Explorar herramientas <ArrowRight size={17}/></button><button className="studio-secondary" onClick={()=>onNavigate('invitations')}><Mail size={16}/> Crear una invitación</button></div><div className="hero-preview-stack" aria-hidden="true"><div className="stack-card stack-left"><MiniArtwork type="charts"/></div><div className="stack-card stack-center"><MiniArtwork type="invitations"/></div><div className="stack-card stack-right"><MiniArtwork type="covers"/></div><span className="stack-sticker">hecho por ti <Sparkles size={14}/></span></div></section>
+  <div className="studio-trust"><span><Check size={14}/> Identidad visual ACH</span><span><Check size={14}/> Herramientas en un solo lugar</span><span><Check size={14}/> Edita y exporta</span></div>
+  <section className="tools-section" id="herramientas"><div className="tools-heading"><div><span className="studio-eyebrow">ELIGE TU PRÓXIMA CREACIÓN</span><h2>¿Qué hacemos hoy?</h2></div><label className="tool-search"><Search size={17}/><input ref={searchRef} value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar una herramienta…" aria-label="Buscar herramienta"/>{query?<button aria-label="Limpiar búsqueda" onClick={()=>setQuery('')}><X size={15}/></button>:<kbd>/</kbd>}</label></div><div className="tool-filters" aria-label="Filtrar herramientas">{['Todas','Documentos','Datos','Eventos','Favoritas'].map(c=><button key={c} aria-pressed={category===c} onClick={()=>setCategory(c)}>{c==='Favoritas'&&<Star size={13}/>} {c}{c==='Todas'&&<span>7</span>}</button>)}</div>
+  <div className="tools-grid">{filtered.map(({id,name,tag,desc,color,Icon},i)=><article key={id} className={`studio-tool tool-${color}`} style={{animationDelay:`${i*55}ms`}}><div className="tool-artwork"><div className="tool-art-glow"/><div className="tool-mini"><MiniArtwork type={id}/></div><button className={`favorite-button ${favorites.includes(id)?'is-favorite':''}`} onClick={()=>toggle(id)} aria-label={`${favorites.includes(id)?'Quitar':'Añadir'} ${name} ${favorites.includes(id)?'de':'a'} favoritas`} aria-pressed={favorites.includes(id)}><Star size={16} fill={favorites.includes(id)?'currentColor':'none'}/></button><span className="tool-art-label">{id==='tables'?'WORD + EXCEL':id==='charts'?'DATOS → VISUALES':'EDITA + DESCARGA'}</span></div><div className="tool-card-copy"><div className="tool-title"><span className="tool-icon"><Icon size={18}/></span><h3>{name}</h3><button className="tool-open" aria-label={`Abrir ${name}`} onClick={()=>onNavigate(id)}><ArrowUpRight size={20}/></button></div><h4>{tag}</h4><p>{desc}</p><button className="text-action" onClick={()=>onNavigate(id)}>Abrir herramienta <ArrowRight size={14}/></button></div></article>)}</div>{!filtered.length&&<div className="empty-tools"><Search size={30}/><h3>{category==='Favoritas'?'Tus favoritas viven aquí.':'No encontramos esa herramienta.'}</h3><p>{category==='Favoritas'?'Marca la estrella de una herramienta para tenerla a mano.':'Prueba con portadas, gráficas, tablas, créditos o invitaciones.'}</p><button className="studio-secondary" onClick={()=>{setQuery('');setCategory('Todas')}}>Ver todas las herramientas</button></div>}</section>
+  <section className="studio-feature"><div className="feature-copy"><span className="studio-eyebrow">DEL PRIMER BORRADOR A TU PRÓXIMA ENTREGA</span><h2>Tu contenido.<br/>Tu toque.<br/><em>Listo para salir.</em></h2><p>Elige la herramienta, ajusta los detalles y crea una pieza que se sienta parte de la misma familia visual.</p><div className="feature-selector">{(['invitations','covers','charts'] as ToolView[]).map(id=><button key={id} onClick={()=>setFeatured(id)} aria-pressed={featured===id}>{tools.find(t=>t.id===id)?.name}</button>)}</div><button className="studio-primary" onClick={()=>onNavigate(featured)}>Probar {current.name.toLowerCase()} <ArrowUpRight size={17}/></button></div><div className={`feature-demo tool-${current.color}`}><div className="demo-windowbar"><span/><span/><span/><small>javtools / {current.name.toLowerCase()}</small><Sparkles size={13}/></div><div className="demo-canvas" key={featured}><MiniArtwork type={featured}/></div><span className="demo-caption"><Check size={13}/> Vista de ejemplo · abre el editor para personalizar</span></div></section>
+  <section className="studio-how"><span className="studio-eyebrow">UN FLUJO MÁS LIGERO</span><h2>Una idea, tres pasos.</h2><div>{[{n:'01',h:'Elige.',p:'Encuentra la herramienta que necesitas.'},{n:'02',h:'Dale tu toque.',p:'Personaliza datos, textos y composición.'},{n:'03',h:'Compártelo.',p:'Exporta desde cada editor y úsalo en tu trabajo.'}].map(x=><article key={x.n}><span>{x.n}</span><h3>{x.h}</h3><p>{x.p}</p></article>)}</div></section>
+  <div className="prototype-note"><Sparkles size={14}/> Prototipo visual de Javtools · Los editores conservan sus funciones existentes.</div>
+ </div>;
 };
