@@ -47,3 +47,12 @@ Cuatro portadas nuevas: Aurora, Órbita, Editorial y Horizonte, además de los d
 Gráficas: nueve tipos (barras verticales/horizontales/apiladas, circular, dona, líneas, área, radar y área polar); cuatro paletas (institucional, Océano, Pastel editorial y Bosque). Probados los cuatro tipos nuevos con datos de referencia y descarga PNG sin errores de navegador.
 
 Tablas: nuevos estilos Editorial limpio, Océano, Bosque y Franjas azules. Aplican cabeceras y filas alternas sin cambiar valores ni fusiones. Confirmados los colores de cabecera y filas en el HTML exportado y la acción de copiado para Word.
+
+
+## Posts de inauguración de obras
+
+Ruta `#posts`, accesible desde el menú y el inicio. Serie de hasta 12 fotografías locales con datos comunes: obra, comunidad o establecimiento, municipio, departamento, componente y fecha opcional. Atajos para Huehuetenango, Chiquimula, Camotán y otros lugares; Camotán conserva Chiquimula como departamento. Componentes: WASH, Salud y nutrición, Transferencias, CFM y Multisectorial.
+
+Dos composiciones (Editorial y Fotografía protagonista), dos formatos PNG (1080 × 1350 y 1080 × 1080), selección de foto y encuadre horizontal/vertical individual. Cada descarga corresponde a la foto seleccionada. Logos originales blancos de FHG y ACH incluidos siempre, sin distorsión, con atribución de financiamiento e implementación. La descarga requiere foto, obra, municipio y departamento; no se inventan cifras, resultados, fechas ni lugares.
+
+Pie de publicación copiable a partir de los datos y descripción aportados. Usa la identidad disponible en el repositorio; la correspondencia exacta con posts anteriores y la guía narrativa institucional queda pendiente de disponer de esas referencias. Textos guardados en el navegador; el editable JSON conserva además fotos y encuadres, y puede volver a abrirse. Las fotografías no se suben a servidores.
