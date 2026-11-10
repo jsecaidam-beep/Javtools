@@ -20,6 +20,7 @@
 .invitation-settings { border-radius: 12px; padding: 16px; }
 .invitation-settings > label:first-child, .invitation-settings h3 { display: block; font-size: 13px; font-weight: 700; margin: 0 0 8px; }
 .invitation-settings select { width: 100%; padding: 9px; border: 1px solid #d6e2eb; border-radius: 8px; font-size: 13px; margin-bottom: 7px; background: #fff; }
+.invitation-secondary-label { display: block; font-size: 12px; font-weight: 700; margin: 18px 0 8px; color: #365266; }
 .invitation-group { border-radius: 12px; overflow: hidden; }
 .invitation-group summary { padding: 16px; font-size: 14px; font-weight: 700; color: #003e7e; cursor: pointer; }
 .invitation-group-fields { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 16px; }
@@ -31,6 +32,19 @@
 .invitation-field input:disabled, .invitation-field textarea:disabled { opacity: .45; }
 .invitation-settings .invitation-logo-option { display: flex; align-items: flex-start; gap: 8px; font-size: 12px; line-height: 1.5; margin: 12px 0 0; cursor: pointer; }
 .invitation-logo-option input { margin-top: 3px; accent-color: #005FB6; }
+.invitation-custom-logos { border-top: 1px solid #dce7ed; margin-top: 16px; padding-top: 14px; }
+.invitation-custom-logo-heading { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.invitation-custom-logo-heading > div { display: flex; flex-direction: column; gap: 3px; }
+.invitation-custom-logo-heading strong { color: #003e7e; font-size: 12px; }
+.invitation-custom-logo-heading span { color: #607383; font-size: 10px; line-height: 1.35; }
+.invitation-custom-logo-heading button { display: inline-flex; align-items: center; gap: 6px; flex: none; border: 1px solid #a9c8e5; background: #fff; border-radius: 8px; color: #005FB6; font-size: 11px; font-weight: 700; padding: 7px 9px; cursor: pointer; }
+.invitation-custom-logo-heading button:disabled { opacity: .5; cursor: not-allowed; }
+.invitation-custom-logo-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.invitation-custom-logo { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px; background: #f5f8fa; border: 1px solid #e0e9ee; border-radius: 9px; }
+.invitation-custom-logo-preview { display: flex; align-items: center; justify-content: center; width: 42px; height: 34px; border-radius: 5px; background: #fff; overflow: hidden; }
+.invitation-custom-logo-preview img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.invitation-custom-logo input { width: 100%; min-width: 0; border: 1px solid #d4dfe6; border-radius: 6px; background: #fff; padding: 7px; color: #274456; font-size: 11px; }
+.invitation-remove-logo { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; color: #a33b3b; background: #fff; border: 1px solid #eccaca; border-radius: 7px; cursor: pointer; }
 .invitation-reset { display: flex; align-items: center; gap: 7px; background: none; color: #607383; font-size: 12px; border: 0; padding: 8px; cursor: pointer; align-self: start; }
 .invitation-reset-confirm { font-size: 12px; padding: 12px; border: 1px solid #d4dfe6; border-radius: 10px; }
 .invitation-reset-confirm p { margin-bottom: 8px; }
@@ -40,11 +54,11 @@
 .invitation-viewport { width: 100%; max-width: 540px; overflow: hidden; margin: 0 auto; box-shadow: 0 10px 32px #1c415b24; }
 
 /* Artwork stays at 540px; only the complete preview is scaled on small screens. */
-.invitation-art { position: relative; width: 540px; padding: 38px 40px; box-sizing: border-box; background: #005FB6; color: white; font-family: 'Roboto', Arial, sans-serif; overflow-wrap: anywhere; }
+.invitation-art { position: relative; width: 540px; padding: 38px 40px; box-sizing: border-box; background: #005FB6; color: white; font-family: 'Roboto', Arial, sans-serif; overflow: hidden; overflow-wrap: anywhere; isolation: isolate; }
 .invitation-art * { box-sizing: border-box; }
 .invitation-art p, .invitation-art h3 { margin: 0; }
-.invitation-background { position: absolute; inset: 0; height: 100%; width: 100%; object-fit: cover; }
-.invitation-art-content { position: relative; display: flex; flex-direction: column; gap: 26px; }
+.invitation-background, .invitation-versatile-background { position: absolute; inset: 0; z-index: -1; height: 100%; width: 100%; object-fit: cover; }
+.invitation-art-content { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 26px; }
 .invitation-header { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .invitation-badge { font-family: 'Invitation Futura', 'Jost', sans-serif; font-size: 17px; font-weight: 700; line-height: 1.6; }
 .invitation-badge span { background: #52AE32; padding: 3px 8px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
@@ -67,15 +81,36 @@
 .invitation-address { font-size: 13px; line-height: 1.5; white-space: pre-line; }
 .invitation-closing { font-size: 14px; line-height: 1.5; white-space: pre-line; }
 .invitation-footer { display: flex; flex-direction: column; gap: 18px; text-align: center; }
-.invitation-logos { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 6px 0; }
-.invitation-donor { flex: 1; max-width: 255px; min-width: 0; }
-.invitation-donor img { display: block; width: 100%; height: auto; }
-.invitation-ach { flex: .7; max-width: 150px; min-width: 0; }
-.invitation-ach img { display: block; width: 100%; height: auto; }
-.invitation-donor + .invitation-ach { border-left: 1.5px solid #fff; padding-left: 22px; max-width: 170px; }
+.invitation-logos { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; column-gap: 12px; row-gap: 10px; padding: 6px 0; }
+.invitation-logo { display: flex; align-items: center; justify-content: center; flex: 1 1 94px; min-width: 0; max-width: 154px; min-height: 44px; }
+.invitation-logo img { display: block; width: 100%; max-height: 52px; height: auto; object-fit: contain; }
+.invitation-logo + .invitation-logo { border-left: 1.5px solid rgba(255, 255, 255, .78); padding-left: 12px; }
+.invitation-logo--fhg { flex-basis: 142px; max-width: 165px; }
+.invitation-logo--ach { flex-basis: 85px; max-width: 112px; }
+.invitation-logo--ops { flex-basis: 138px; max-width: 176px; }
+.invitation-logo--ops img { max-height: 48px; }
+.invitation-logo--custom { flex-basis: 88px; max-width: 126px; background: #fff; border-radius: 7px; padding: 6px 8px; }
+.invitation-logo--custom + .invitation-logo { border-left: 0; }
+.invitation-logo--custom img { max-height: 42px; }
 .invitation-attribution { font-size: 11px; line-height: 1.5; white-space: pre-line; }
 .invitation-project { background: #f5f8fc; color: #005FB6; border-radius: 12px; padding: 12px 15px; font-size: 12px; font-weight: 600; line-height: 1.4; white-space: pre-line; }
 .invitation-project p:first-child { font-size: 10px; font-weight: 500; margin-bottom: 3px; }
+
+/* Plantilla institucional: limpia y versátil; azul y verde solo como acentos. */
+.invitation-art--versatile { color: #17344b; background: #fff; }
+.invitation-versatile-background { display: none; }
+.invitation-art--versatile .invitation-badge span { background: #005FB6; color: #fff; }
+.invitation-art--versatile h3 { color: #005FB6; }
+.invitation-art--versatile .invitation-region { color: #46812e; font-weight: 700; }
+.invitation-art--versatile .invitation-name { color: #005FB6; }
+.invitation-art--versatile .invitation-role, .invitation-art--versatile .invitation-introduction, .invitation-art--versatile .invitation-address, .invitation-art--versatile .invitation-closing { color: #355267; }
+.invitation-art--versatile .invitation-work { color: #005FB6; background: #fff; border-radius: 0 12px 12px 0; border-left: 7px solid #52AE32; box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
+.invitation-art--versatile .invitation-schedule { color: #005FB6; background: rgba(255, 255, 255, .92); box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
+.invitation-art--versatile .invitation-schedule-cell + .invitation-schedule-cell { border-left-color: #b7d3e5; }
+.invitation-art--versatile .invitation-small-label { color: #44812e; }
+.invitation-art--versatile .invitation-location { color: #005FB6; }
+.invitation-art--versatile .invitation-footer { margin: 6px -40px -38px; padding: 22px 40px 30px; background: linear-gradient(110deg, #004f94, #096c9a 57%, #238349); color: #fff; }
+.invitation-art--versatile .invitation-project { background: rgba(255, 255, 255, .94); color: #005FB6; }
 
 @media (max-width: 1023px) {
   .invitation-studio { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
@@ -88,4 +123,5 @@
   .invitation-actions { width: 100%; }
   .invitation-actions button { flex: 1; font-size: 11px; }
   .invitation-actions .invitation-primary { flex-basis: 100%; }
+  .invitation-custom-logo-heading { align-items: flex-start; flex-direction: column; }
 }

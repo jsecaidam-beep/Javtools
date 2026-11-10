@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Download, Upload, Save, RotateCcw, Mail, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Download, Upload, Save, RotateCcw, Mail, Eye, EyeOff, Loader2, ImagePlus, Trash2 } from 'lucide-react';
 import { downloadBlob, downloadElementAsPng } from '../utils/canvasExport';
 import './InvitationEditor.css';
 
@@ -18,10 +18,26 @@ const DEFAULT_FIELDS = {
   project: PROJECT,
 };
 type Field = keyof typeof DEFAULT_FIELDS;
+type BuiltInLogo = 'fhg' | 'ach' | 'ops';
+type InvitationTemplate = 'ach' | 'institutional';
+type CustomLogo = {
+  id: string;
+  name: string;
+  src: string;
+};
+type RenderedLogo = {
+  id: string;
+  name: string;
+  src: string;
+  alt: string;
+  kind: BuiltInLogo | 'custom';
+};
 type InvitationData = {
   fields: Record<Field, string>;
   visible: Record<Field, boolean>;
-  logos: { fhg: boolean; ach: boolean };
+  logos: Record<BuiltInLogo, boolean>;
+  customLogos: CustomLogo[];
+  template: InvitationTemplate;
   format: 'vertical' | 'compact';
 };
 const LABELS: Record<Field, string> = {
@@ -38,9 +54,58 @@ const GROUPS: { title: string; fields: Field[]; open?: boolean }[] = [
   { title: 'Proyecto y financiamiento', fields: ['attribution', 'project'] },
 ];
 const MULTILINE: Field[] = ['title', 'introduction', 'work', 'address', 'closing', 'attribution', 'project'];
+const MAX_CUSTOM_LOGOS = 6;
+const MAX_LOGO_FILE_SIZE = 450_000;
+const ACCEPTED_LOGO_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+const BUILT_IN_LOGOS: Record<BuiltInLogo, Omit<RenderedLogo, 'id'>> = {
+  fhg: {
+    name: 'Fondo Humanitario para Guatemala (FHG)',
+    src: `${ASSETS}fhg-blanco.svg`,
+    alt: 'Proyecto financiado por: Fondo Humanitario para Guatemala',
+    kind: 'fhg',
+  },
+  ach: {
+    name: 'Acción contra el Hambre',
+    src: `${ASSETS}ach-blanco.svg`,
+    alt: 'Acción contra el Hambre',
+    kind: 'ach',
+  },
+  ops: {
+    name: 'OPS / OMS',
+    src: `${ASSETS}ops-blanco.png`,
+    alt: 'Organización Panamericana de la Salud y Organización Mundial de la Salud',
+    kind: 'ops',
+  },
+};
 
 function defaults(): InvitationData {
-  return { fields: { ...DEFAULT_FIELDS }, visible: Object.fromEntries(Object.keys(DEFAULT_FIELDS).map(key => [key, true])) as Record<Field, boolean>, logos: { fhg: true, ach: true }, format: 'vertical' };
+  return {
+    fields: { ...DEFAULT_FIELDS },
+    visible: Object.fromEntries(Object.keys(DEFAULT_FIELDS).map(key => [key, true])) as Record<Field, boolean>,
+    logos: { fhg: true, ach: true, ops: true },
+    customLogos: [],
+    template: 'ach',
+    format: 'vertical',
+  };
+}
+
+function isSafeLogoSource(value: unknown): value is string {
+  return typeof value === 'string'
+    && /^data:image\/(png|jpeg|webp|svg\+xml);base64,[a-z0-9+/=]+$/i.test(value)
+    && value.length <= 2_100_000;
+}
+
+function readableLogoName(filename: string) {
+  return filename.replace(/\.[^.]+$/, '').replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'Logotipo adicional';
+}
+
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error(`No se pudo leer ${file.name}.`));
+    reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error(`No se pudo leer ${file.name}.`));
+    reader.readAsDataURL(file);
+  });
 }
 
 /** Only accept this editor's fields; imported content is rendered as plain React text. */
@@ -53,8 +118,22 @@ function readData(value: unknown): InvitationData {
     if (typeof input.fields[key] === 'string') next.fields[key] = input.fields[key].slice(0, 3000);
     if (typeof input.visible?.[key] === 'boolean') next.visible[key] = input.visible[key];
   }
-  if (typeof input.logos?.fhg === 'boolean') next.logos.fhg = input.logos.fhg;
-  if (typeof input.logos?.ach === 'boolean') next.logos.ach = input.logos.ach;
+  for (const key of Object.keys(BUILT_IN_LOGOS) as BuiltInLogo[]) {
+    if (typeof input.logos?.[key] === 'boolean') next.logos[key] = input.logos[key];
+  }
+  if (Array.isArray(input.customLogos)) {
+    next.customLogos = input.customLogos.slice(0, MAX_CUSTOM_LOGOS).flatMap((candidate, index) => {
+      if (!candidate || typeof candidate !== 'object') return [];
+      const logo = candidate as Partial<CustomLogo>;
+      if (!isSafeLogoSource(logo.src)) return [];
+      return [{
+        id: typeof logo.id === 'string' ? logo.id.slice(0, 120) : `custom-imported-${index}`,
+        name: typeof logo.name === 'string' ? logo.name.slice(0, 80) : 'Logotipo adicional',
+        src: logo.src,
+      }];
+    });
+  }
+  next.template = input.template === 'institutional' ? 'institutional' : 'ach';
   next.format = input.format === 'compact' ? 'compact' : 'vertical';
   return next;
 }
@@ -79,6 +158,7 @@ export function InvitationEditor() {
   const viewport = useRef<HTMLDivElement>(null);
   const artwork = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const customLogoInput = useRef<HTMLInputElement>(null);
   const minHeight = data.format === 'vertical' ? 960 : 720;
   const shown = (key: Field) => data.visible[key] && !!data.fields[key].trim();
   const text = (key: Field) => data.fields[key].trim();
@@ -87,7 +167,11 @@ export function InvitationEditor() {
   const hasPlace = shown('location') || shown('address');
   const hasRecipient = shown('name') || shown('role') || shown('institution');
   const hasBody = hasRecipient || shown('introduction') || shown('work') || hasDate || hasTime || hasPlace || shown('closing');
-  const hasFooter = data.logos.fhg || data.logos.ach || shown('attribution') || shown('project');
+  const selectedLogos: RenderedLogo[] = [
+    ...(Object.keys(BUILT_IN_LOGOS) as BuiltInLogo[]).flatMap(key => data.logos[key] ? [{ id: key, ...BUILT_IN_LOGOS[key] }] : []),
+    ...data.customLogos.map(logo => ({ id: logo.id, name: logo.name, src: logo.src, alt: logo.name, kind: 'custom' as const })),
+  ];
+  const hasFooter = selectedLogos.length > 0 || shown('attribution') || shown('project');
   const hasHeader = shown('badge') || shown('title') || shown('region');
 
   useEffect(() => {
@@ -111,12 +195,42 @@ export function InvitationEditor() {
   const toggle = (key: Field) => setData(prev => ({ ...prev, visible: { ...prev.visible, [key]: !prev.visible[key] } }));
   const slug = (text('work') || 'huehuetenango').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50) || 'ach';
 
+  async function addCustomLogos(files?: FileList | null) {
+    const supplied = Array.from(files ?? []);
+    const remaining = MAX_CUSTOM_LOGOS - data.customLogos.length;
+    const accepted = supplied.filter(file => ACCEPTED_LOGO_TYPES.includes(file.type) && file.size <= MAX_LOGO_FILE_SIZE).slice(0, Math.max(0, remaining));
+    const rejected = supplied.length - accepted.length;
+    try {
+      if (!accepted.length) {
+        setNotice(remaining <= 0 ? `Puedes usar hasta ${MAX_CUSTOM_LOGOS} logotipos adicionales.` : 'Agrega un PNG, JPG, WebP o SVG de hasta 450 KB.');
+        return;
+      }
+      const additions = await Promise.all(accepted.map(async (file, index) => ({
+        id: `custom-${Date.now()}-${index}`,
+        name: readableLogoName(file.name),
+        src: await fileToDataUrl(file),
+      })));
+      setData(prev => ({ ...prev, customLogos: [...prev.customLogos, ...additions].slice(0, MAX_CUSTOM_LOGOS) }));
+      setNotice(rejected ? `Se agregaron ${additions.length} logo(s). Algunos archivos no cumplían el formato, tamaño o límite.` : `${additions.length} logo(s) agregado(s).`);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'No se pudieron agregar los logotipos.');
+    } finally {
+      if (customLogoInput.current) customLogoInput.current.value = '';
+    }
+  }
+
+  const renameCustomLogo = (id: string, name: string) => setData(prev => ({
+    ...prev,
+    customLogos: prev.customLogos.map(logo => logo.id === id ? { ...logo, name: name.slice(0, 80) } : logo),
+  }));
+  const removeCustomLogo = (id: string) => setData(prev => ({ ...prev, customLogos: prev.customLogos.filter(logo => logo.id !== id) }));
+
   async function exportPng() {
     if (!artwork.current || busy) return;
     setBusy(true);
     setNotice('');
     try {
-      await downloadElementAsPng(artwork.current, `invitacion-${slug}.png`, { scale: 2, backgroundColor: '#005FB6' });
+      await downloadElementAsPng(artwork.current, `invitacion-${slug}.png`, { scale: 2, backgroundColor: data.template === 'institutional' ? '#f5f7f2' : '#005FB6' });
       setNotice('Invitación descargada en PNG.');
     } catch (error) {
       setNotice(error instanceof Error ? error.message : 'No se pudo descargar la imagen. Inténtalo de nuevo.');
@@ -124,7 +238,7 @@ export function InvitationEditor() {
   }
 
   function saveEditable() {
-    downloadBlob(new Blob([JSON.stringify({ version: 1, ...data }, null, 2)], { type: 'application/json' }), `invitacion-${slug}.json`);
+    downloadBlob(new Blob([JSON.stringify({ version: 2, ...data }, null, 2)], { type: 'application/json' }), `invitacion-${slug}.json`);
     setNotice('Editable guardado. Puedes volver a abrirlo aquí para seguir trabajando.');
   }
 
@@ -143,7 +257,7 @@ export function InvitationEditor() {
       <div className="glass-panel invitation-toolbar">
         <div>
           <h2><Mail size={22} /> Invitaciones</h2>
-          <p>Edita los datos y oculta lo que no necesites. Todo se acomoda al contenido.</p>
+          <p>Elige la plantilla, edita los datos y suma los logos que el evento necesite.</p>
         </div>
         <div className="invitation-actions">
           <button type="button" onClick={() => fileInput.current?.click()}><Upload size={16} /> Abrir editable</button>
@@ -156,7 +270,13 @@ export function InvitationEditor() {
       <div className="invitation-studio">
         <div className="invitation-controls">
           <div className="glass-panel invitation-settings">
-            <label htmlFor="invitation-format">Composición</label>
+            <label htmlFor="invitation-template">Diseño de invitación</label>
+            <select id="invitation-template" value={data.template} onChange={event => setData(prev => ({ ...prev, template: event.target.value as InvitationTemplate }))}>
+              <option value="ach">Azul institucional</option>
+              <option value="institutional">Institucional versátil</option>
+            </select>
+            <p>La segunda opción toma el azul y verde como acento, sin llevar una identidad ACH en el fondo.</p>
+            <label htmlFor="invitation-format" className="invitation-secondary-label">Composición</label>
             <select id="invitation-format" value={data.format} onChange={event => setData(prev => ({ ...prev, format: event.target.value as InvitationData['format'] }))}>
               <option value="vertical">Vertical</option>
               <option value="compact">Compacta</option>
@@ -181,11 +301,25 @@ export function InvitationEditor() {
           </details>)}
           <div className="glass-panel invitation-settings">
             <h3>Logotipos</h3>
-            <p>FHG y Acción contra el Hambre, tomados de los recursos originales.</p>
-            {(['fhg', 'ach'] as const).map(key => <label key={key} className="invitation-logo-option">
+            <p>Selecciona los logos institucionales y agrega los de otros socios cuando hagan falta.</p>
+            {(Object.keys(BUILT_IN_LOGOS) as BuiltInLogo[]).map(key => <label key={key} className="invitation-logo-option">
               <input type="checkbox" checked={data.logos[key]} onChange={event => setData(prev => ({ ...prev, logos: { ...prev.logos, [key]: event.target.checked } }))} />
-              {key === 'fhg' ? 'Fondo Humanitario para Guatemala (FHG)' : 'Acción contra el Hambre'}
+              {BUILT_IN_LOGOS[key].name}
             </label>)}
+            <div className="invitation-custom-logos">
+              <div className="invitation-custom-logo-heading">
+                <div><strong>Logos adicionales</strong><span>PNG, JPG, WebP o SVG · hasta 450 KB</span></div>
+                <button type="button" onClick={() => customLogoInput.current?.click()} disabled={data.customLogos.length >= MAX_CUSTOM_LOGOS}><ImagePlus size={15} /> Agregar logo</button>
+                <input ref={customLogoInput} type="file" accept={ACCEPTED_LOGO_TYPES.join(',')} multiple hidden onChange={event => addCustomLogos(event.target.files)} aria-label="Agregar logotipos adicionales" />
+              </div>
+              {data.customLogos.length > 0 && <div className="invitation-custom-logo-list">
+                {data.customLogos.map(logo => <div className="invitation-custom-logo" key={logo.id}>
+                  <div className="invitation-custom-logo-preview"><img src={logo.src} alt="" /></div>
+                  <input value={logo.name} onChange={event => renameCustomLogo(logo.id, event.target.value)} aria-label="Nombre del logotipo" maxLength={80} />
+                  <button type="button" className="invitation-remove-logo" onClick={() => removeCustomLogo(logo.id)} aria-label={`Quitar ${logo.name}`} title="Quitar logo"><Trash2 size={15} /></button>
+                </div>)}
+              </div>}
+            </div>
           </div>
           {confirmReset ? <div className="invitation-reset-confirm">
             <p>Se reemplazará tu borrador por la plantilla inicial.</p>
@@ -198,8 +332,10 @@ export function InvitationEditor() {
           <div className="invitation-preview-caption"><span>Vista previa</span><span>{1080} × {dimensions.height * 2} px</span></div>
           <div ref={viewport} className="invitation-viewport" style={{ height: dimensions.height * dimensions.scale }}>
             <div data-preview-transform style={{ width: 540, transform: `scale(${dimensions.scale})`, transformOrigin: 'top left' }}>
-              <div ref={artwork} data-export-surface="invitation" data-export-width="540" className="invitation-art" style={{ minHeight }}>
-                <img className="invitation-background" src={`${ASSETS}fondo-ach-2160.webp`} alt="" />
+              <div ref={artwork} data-export-surface="invitation" data-export-width="540" className={`invitation-art ${data.template === 'institutional' ? 'invitation-art--versatile' : ''}`} style={{ minHeight }}>
+                {data.template === 'ach'
+                  ? <img className="invitation-background" src={`${ASSETS}fondo-ach-2160.webp`} alt="" />
+                  : <div className="invitation-versatile-background" aria-hidden="true" />}
                 <div className="invitation-art-content" style={{ minHeight: minHeight - 76 }}>
                   {hasHeader && <div className="invitation-header">
                     {shown('badge') && <div className="invitation-badge"><span>{text('badge')}</span></div>}
@@ -233,9 +369,10 @@ export function InvitationEditor() {
                     {shown('closing') && <p className="invitation-closing">{text('closing')}</p>}
                   </div>}
                   {hasFooter && <div className="invitation-footer">
-                    {(data.logos.fhg || data.logos.ach) && <div className="invitation-logos">
-                      {data.logos.fhg && <div className="invitation-donor"><img src={`${ASSETS}fhg-blanco.svg`} alt="Proyecto financiado por: FHG, Fondo Humanitario para Guatemala" /></div>}
-                      {data.logos.ach && <div className="invitation-ach"><img src={`${ASSETS}ach-blanco.svg`} alt="Acción contra el Hambre" /></div>}
+                    {selectedLogos.length > 0 && <div className="invitation-logos">
+                      {selectedLogos.map(logo => <div className={`invitation-logo invitation-logo--${logo.kind}`} key={logo.id} title={logo.name}>
+                        <img src={logo.src} alt={logo.alt} />
+                      </div>)}
                     </div>}
                     {shown('attribution') && <p className="invitation-attribution">{text('attribution')}</p>}
                     {shown('project') && <div className="invitation-project"><p>En el marco del proyecto:</p><p>{text('project')}</p></div>}
