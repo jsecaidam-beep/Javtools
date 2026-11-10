@@ -1,0 +1,36 @@
+@font-face{font-family:'Invitation Futura';src:url('../../public/assets/invitaciones/futura-lt-pro-bold.woff2') format('woff2');font-weight:700;font-display:swap}
+.nameplate-editor{display:flex;flex-direction:column;gap:20px;color:#173e54;font-family:'Roboto',Arial,sans-serif}
+.nameplate-toolbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:22px;border-radius:20px}
+.nameplate-toolbar h2{display:flex;align-items:center;gap:10px;color:#003f7d;font-size:22px;font-weight:750;margin:0 0 6px}
+.nameplate-toolbar p,.nameplate-settings p,.nameplate-preview-note,.nameplate-fold-note p{font-size:12px;line-height:1.65;color:#526d7d;margin:0}
+.nameplate-actions{display:flex;gap:8px;flex-wrap:wrap}
+.nameplate-actions button{display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #bdd1e0;border-radius:10px;background:#fff;color:#005fb6;padding:11px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.nameplate-actions button:disabled{opacity:.5;cursor:wait}
+.nameplate-actions .nameplate-primary{background:#005fb6;border-color:#005fb6;color:#fff}
+.nameplate-notice,.nameplate-error{padding:12px 16px;border-radius:10px;font-size:13px;line-height:1.5;margin:0;background:#e4f1fb;color:#003f7d}
+.nameplate-error{background:#fff0ec;color:#982b24}
+.nameplate-studio{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:24px;align-items:start}
+.nameplate-controls{display:flex;flex-direction:column;gap:14px;min-width:0}
+.nameplate-settings{padding:20px;border-radius:16px;display:flex;flex-direction:column;gap:10px}
+.nameplate-settings h3,.nameplate-fold-note h3{font-size:14px;font-weight:750;color:#003f7d;margin:0 0 3px}
+.nameplate-settings>label:not(.nameplate-checkbox){display:flex;justify-content:space-between;font-size:12px;font-weight:650;margin-top:5px;gap:12px}
+.nameplate-settings label span{font-weight:400;font-size:11px;color:#607b88}
+.nameplate-settings input:not([type=checkbox]):not([type=range]),.nameplate-settings textarea,.nameplate-settings select{box-sizing:border-box;width:100%;border:1px solid #cbdce5;background:#fff;border-radius:8px;padding:10px;font:inherit;font-size:13px;color:#173e54;line-height:1.5;min-width:0}
+.nameplate-settings textarea{resize:vertical}
+.nameplate-settings input[type=range]{accent-color:#005fb6;width:100%}
+.nameplate-checkbox{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.5;cursor:pointer;padding:3px 0}
+.nameplate-checkbox input{accent-color:#005fb6;margin-top:3px;flex:none}
+.nameplate-fold-note{background:#eaf4e6;border-left:3px solid #52ae32;border-radius:0 12px 12px 0;padding:16px}
+.nameplate-fold-note p{margin-top:8px}
+.nameplate-reset{display:flex;gap:6px;align-items:center;font-size:12px;color:#526d7d;border:0;background:transparent;cursor:pointer;align-self:flex-start;padding:8px}
+.nameplate-reset-confirm{font-size:12px;border:1px solid #cbdce5;border-radius:10px;padding:14px}
+.nameplate-reset-confirm button{border:1px solid #cbdce5;border-radius:7px;background:#fff;color:#003f7d;padding:7px 10px;margin:8px 8px 0 0;cursor:pointer}
+.nameplate-preview-panel{position:sticky;top:115px;min-width:0;background:#dfe9ef;border:1px solid #d1e0e8;border-radius:18px;padding:20px}
+.nameplate-preview-caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#4d697b;font-size:11px;margin-bottom:16px}
+.nameplate-preview-caption strong{font-size:12px;font-weight:650}
+.nameplate-page{position:relative;width:100%;aspect-ratio:11/8.5;background:#fff;box-shadow:0 12px 30px #173e5420;overflow:hidden}
+.nameplate-page canvas{display:block;width:100%;height:auto;aspect-ratio:11/8.5}
+.nameplate-rendering{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:8px;color:#003f7d;background:#ffffffd9;font-size:13px}
+.nameplate-preview-note{margin:14px 0 0}
+@media(max-width:1000px){.nameplate-studio{grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:16px}.nameplate-preview-panel{padding:14px}}
+@media(max-width:700px){.nameplate-studio{grid-template-columns:minmax(0,1fr)}.nameplate-preview-panel{position:static;grid-row:1}.nameplate-toolbar{padding:18px}.nameplate-actions{width:100%}.nameplate-actions button{flex:1;padding:10px;font-size:11px}.nameplate-actions .nameplate-primary{flex-basis:100%}.nameplate-toolbar h2{font-size:20px}}
