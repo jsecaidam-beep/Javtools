@@ -146,7 +146,13 @@ export async function renderNameplate(canvas: HTMLCanvasElement, data: Nameplate
       if (height <= available || factor <= .5) break;
       factor -= .05;
     } while (factor > 0);
-    const totalHeight = blocks.reduce((sum, block) => sum + block.height, 0) + (blocks.length - 1) * 9;
+    const gaps = (blocks.length - 1) * 9;
+    const textHeight = blocks.reduce((sum, block) => sum + block.height, 0);
+    if (textHeight + gaps > available) {
+      const scale = (available - gaps) / textHeight;
+      blocks = blocks.map(block => ({ ...block, size: block.size * scale, height: block.height * scale }));
+    }
+    const totalHeight = blocks.reduce((sum, block) => sum + block.height, 0) + gaps;
     let textY = top + (available - totalHeight) / 2;
     blocks.forEach((block, index) => {
       paintText(context, block, textY, index === 0 ? ink : dark ? '#ffffff' : '#263d4c');
