@@ -96,21 +96,21 @@
 .invitation-project { background: #f5f8fc; color: #005FB6; border-radius: 12px; padding: 12px 15px; font-size: 12px; font-weight: 600; line-height: 1.4; white-space: pre-line; }
 .invitation-project p:first-child { font-size: 10px; font-weight: 500; margin-bottom: 3px; }
 
-/* Plantilla institucional: limpia y versátil; azul y verde solo como acentos. */
-.invitation-art--versatile { color: #17344b; background: #fff; }
+/* Plantilla institucional: degradado azul, amarillo y verde con texto de alto contraste. */
+.invitation-art--versatile { color: #17344b; background: linear-gradient(155deg, #91cdef 0%, #e9dc80 48%, #7bcf89 100%); }
 .invitation-versatile-background { display: none; }
 .invitation-art--versatile .invitation-badge span { background: #005FB6; color: #fff; }
-.invitation-art--versatile h3 { color: #005FB6; }
-.invitation-art--versatile .invitation-region { color: #46812e; font-weight: 700; }
-.invitation-art--versatile .invitation-name { color: #005FB6; }
-.invitation-art--versatile .invitation-role, .invitation-art--versatile .invitation-introduction, .invitation-art--versatile .invitation-address, .invitation-art--versatile .invitation-closing { color: #355267; }
-.invitation-art--versatile .invitation-work { color: #005FB6; background: #fff; border-radius: 0 12px 12px 0; border-left: 7px solid #52AE32; box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
-.invitation-art--versatile .invitation-schedule { color: #005FB6; background: rgba(255, 255, 255, .92); box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
-.invitation-art--versatile .invitation-schedule-cell + .invitation-schedule-cell { border-left-color: #b7d3e5; }
-.invitation-art--versatile .invitation-small-label { color: #44812e; }
-.invitation-art--versatile .invitation-location { color: #005FB6; }
+.invitation-art--versatile h3 { color: #003f7d; }
+.invitation-art--versatile .invitation-region { color: #215026; font-weight: 700; }
+.invitation-art--versatile .invitation-name { color: #003f7d; }
+.invitation-art--versatile .invitation-role, .invitation-art--versatile .invitation-introduction, .invitation-art--versatile .invitation-address, .invitation-art--versatile .invitation-closing { color: #173e54; }
+.invitation-art--versatile .invitation-work { color: #003f7d; background: rgba(215, 239, 200, .55); border-radius: 0 12px 12px 0; border-left: 7px solid #52AE32; box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
+.invitation-art--versatile .invitation-schedule { color: #003f7d; background: rgba(233, 236, 170, .5); box-shadow: 0 6px 16px rgba(29, 65, 91, .08); }
+.invitation-art--versatile .invitation-schedule-cell + .invitation-schedule-cell { border-left-color: rgba(0, 63, 125, .3); }
+.invitation-art--versatile .invitation-small-label { color: #215026; }
+.invitation-art--versatile .invitation-location { color: #003f7d; }
 .invitation-art--versatile .invitation-footer { margin: 6px -40px -38px; padding: 22px 40px 30px; background: linear-gradient(110deg, #004f94, #096c9a 57%, #238349); color: #fff; }
-.invitation-art--versatile .invitation-project { background: rgba(255, 255, 255, .94); color: #005FB6; }
+.invitation-art--versatile .invitation-project { background: linear-gradient(115deg, #b3ddef, #e9dc80 52%, #a4dda1); color: #003f7d; }
 
 @media (max-width: 1023px) {
   .invitation-studio { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
