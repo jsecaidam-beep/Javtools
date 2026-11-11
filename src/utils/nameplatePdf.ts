@@ -1,6 +1,3 @@
-const LETTER_WIDTH_PT = 792;
-const LETTER_HEIGHT_PT = 612;
-
 function canvasBlob(canvas: HTMLCanvasElement, type: string, quality?: number): Promise<Blob> {
   if (!canvas.width || !canvas.height) {
     return Promise.reject(new Error('La hoja no tiene un tamaño válido para exportar.'));
@@ -14,8 +11,13 @@ function canvasBlob(canvas: HTMLCanvasElement, type: string, quality?: number): 
   });
 }
 
-/** Embed the full sheet without margins in a landscape US Letter PDF. */
+/** Embed the full sheet at its physical Letter size, matching the preview. */
 export async function canvasToLetterPdf(canvas: HTMLCanvasElement): Promise<Blob> {
+  const imageWidth = canvas.width;
+  const imageHeight = canvas.height;
+  const landscape = imageWidth > imageHeight;
+  const widthPt = landscape ? 792 : 612;
+  const heightPt = landscape ? 612 : 792;
   const jpeg = await canvasBlob(canvas, 'image/jpeg', 0.98);
   const imageBuffer = await jpeg.arrayBuffer();
   const imageBytes = new Uint8Array(imageBuffer);
@@ -43,18 +45,18 @@ export async function canvasToLetterPdf(canvas: HTMLCanvasElement): Promise<Blob
   length += binaryMarker.byteLength;
 
   startObject(1);
-  appendText('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  appendText('<< /Type /Catalog /Pages 2 0 R /ViewerPreferences << /PrintScaling /None /PickTrayByPDFSize true >> >>\nendobj\n');
   startObject(2);
   appendText('<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
   startObject(3);
-  appendText(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${LETTER_WIDTH_PT} ${LETTER_HEIGHT_PT}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
+  appendText(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${widthPt} ${heightPt}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
   startObject(4);
-  appendText(`<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBuffer.byteLength} >>\nstream\n`);
+  appendText(`<< /Type /XObject /Subtype /Image /Width ${imageWidth} /Height ${imageHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageBuffer.byteLength} >>\nstream\n`);
   parts.push(imageBuffer);
   length += imageBuffer.byteLength;
   appendText('\nendstream\nendobj\n');
   startObject(5);
-  const content = `q\n${LETTER_WIDTH_PT} 0 0 ${LETTER_HEIGHT_PT} 0 0 cm\n/Im0 Do\nQ\n`;
+  const content = `q\n${widthPt} 0 0 ${heightPt} 0 0 cm\n/Im0 Do\nQ\n`;
   appendText(`<< /Length ${encoder.encode(content).byteLength} >>\nstream\n${content}endstream\nendobj\n`);
 
   const xrefOffset = length;

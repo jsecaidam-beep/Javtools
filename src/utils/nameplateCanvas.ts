@@ -5,6 +5,7 @@ export type NameplateData = {
   institution: string;
   nameSize: number;
   style: 'institutional' | 'minimal';
+  orientation: 'portrait' | 'landscape';
   guides: boolean;
   logos: Record<NameplateLogoId, boolean>;
 };
@@ -17,13 +18,6 @@ export const NAMEPLATE_LOGOS: { id: NameplateLogoId; label: string; file: string
   { id: 'mspas', label: 'Ministerio de Salud Pública y Asistencia Social', file: 'mspas-color.png', whiteFile: 'mspas-blanco.png' },
 ];
 
-export const NAMEPLATE_WIDTH = 3300;
-export const NAMEPLATE_HEIGHT = 2550;
-const WIDTH = 1100;
-const HEIGHT = 850;
-// Two 22.86 mm tabs form a 45.72 mm base, stable enough for the A-frame.
-const TAB = 90;
-const FACE = (HEIGHT - 2 * TAB) / 2;
 const FONT = '"Invitation Futura", "Jost Variable", "Jost", Arial, sans-serif';
 const BODY_FONT = '"Roboto Variable", "Roboto", Arial, sans-serif';
 
@@ -60,12 +54,12 @@ function wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: num
   return lines;
 }
 
-function textBlock(context: CanvasRenderingContext2D, text: string, size: number, bold: boolean, maxLines: number) {
+function textBlock(context: CanvasRenderingContext2D, text: string, size: number, bold: boolean, maxLines: number, maxWidth: number) {
   let current = size;
   let lines: string[] = [];
   do {
     context.font = `${bold ? 700 : 400} ${current}px ${bold ? FONT : BODY_FONT}`;
-    lines = wrapText(context, text, WIDTH - 100);
+    lines = wrapText(context, text, maxWidth);
     if (lines.length <= maxLines || current <= 16) break;
     current -= 1;
   } while (current > 0);
@@ -73,24 +67,28 @@ function textBlock(context: CanvasRenderingContext2D, text: string, size: number
 }
 
 type TextBlock = ReturnType<typeof textBlock>;
-function paintText(context: CanvasRenderingContext2D, block: TextBlock, y: number, color: string) {
+function paintText(context: CanvasRenderingContext2D, block: TextBlock, y: number, color: string, centerX: number) {
   context.fillStyle = color;
   context.font = `${block.bold ? 700 : 400} ${block.size}px ${block.bold ? FONT : BODY_FONT}`;
   context.textBaseline = 'middle';
   for (const [index, line] of block.lines.entries()) {
-    context.fillText(line, WIDTH / 2, y + block.size * 1.16 * (index + 0.5));
+    context.fillText(line, centerX, y + block.size * 1.16 * (index + 0.5));
   }
 }
 
 export async function renderNameplate(canvas: HTMLCanvasElement, data: NameplateData): Promise<void> {
+  const WIDTH = data.orientation === 'landscape' ? 1100 : 850;
+  const HEIGHT = data.orientation === 'landscape' ? 850 : 1100;
+  const TAB = data.orientation === 'landscape' ? 90 : 135;
+  const FACE = (HEIGHT - 2 * TAB) / 2;
   await document.fonts.ready;
   await document.fonts.load(`700 56px ${FONT}`);
   const enabled = NAMEPLATE_LOGOS.filter(logo => data.logos[logo.id]);
   const dark = data.style === 'institutional';
   const images = await Promise.all(enabled.map(logo => loadLogo(dark ? logo.whiteFile : logo.file)));
   const surface = document.createElement('canvas');
-  surface.width = NAMEPLATE_WIDTH;
-  surface.height = NAMEPLATE_HEIGHT;
+  surface.width = WIDTH * 3;
+  surface.height = HEIGHT * 3;
   const context = surface.getContext('2d');
   if (!context) throw new Error('Tu navegador no pudo preparar la hoja.');
   context.scale(3, 3);
@@ -139,9 +137,9 @@ export async function renderNameplate(canvas: HTMLCanvasElement, data: Nameplate
     const top = images.length ? 102 : 34;
     const available = FACE - top - 38;
     do {
-      blocks = [textBlock(context, name, data.nameSize * factor, true, 3)];
-      if (data.role.trim()) blocks.push(textBlock(context, data.role, 28 * factor, false, 2));
-      if (data.institution.trim()) blocks.push(textBlock(context, data.institution, 24 * factor, false, 2));
+      blocks = [textBlock(context, name, data.nameSize * factor, true, 3, WIDTH - 100)];
+      if (data.role.trim()) blocks.push(textBlock(context, data.role, 28 * factor, false, 2, WIDTH - 100));
+      if (data.institution.trim()) blocks.push(textBlock(context, data.institution, 24 * factor, false, 2, WIDTH - 100));
       const height = blocks.reduce((sum, block) => sum + block.height, 0) + (blocks.length - 1) * 9;
       if (height <= available || factor <= .5) break;
       factor -= .05;
@@ -155,13 +153,13 @@ export async function renderNameplate(canvas: HTMLCanvasElement, data: Nameplate
     const totalHeight = blocks.reduce((sum, block) => sum + block.height, 0) + gaps;
     let textY = top + (available - totalHeight) / 2;
     blocks.forEach((block, index) => {
-      paintText(context, block, textY, index === 0 ? ink : dark ? '#ffffff' : '#263d4c');
+      paintText(context, block, textY, index === 0 ? ink : dark ? '#ffffff' : '#263d4c', WIDTH / 2);
       textY += block.height + 9;
     });
     context.restore();
   }
 
-  // One landscape Letter sheet, two outward faces and two support tabs.
+  // One Letter sheet, two outward faces and two support tabs.
   face(TAB, true);
   face(HEIGHT / 2, false);
   if (data.guides) {
@@ -180,8 +178,8 @@ export async function renderNameplate(canvas: HTMLCanvasElement, data: Nameplate
     context.restore();
   }
   // Render offscreen first so edits never leave an incomplete exported sheet.
-  canvas.width = NAMEPLATE_WIDTH;
-  canvas.height = NAMEPLATE_HEIGHT;
+  canvas.width = surface.width;
+  canvas.height = surface.height;
   const output = canvas.getContext('2d');
   if (!output) throw new Error('Tu navegador no pudo mostrar la hoja.');
   output.drawImage(surface, 0, 0);
