@@ -14,7 +14,7 @@ const BASE = `${import.meta.env.BASE_URL}assets/identificadores/`;
 export const NAMEPLATE_LOGOS: { id: NameplateLogoId; label: string; file: string; whiteFile: string; background?: string }[] = [
   { id: 'fhg', label: 'Fondo Humanitario para Guatemala', file: 'fhg-blanco.svg', whiteFile: 'fhg-blanco.svg', background: '#005FB6' },
   { id: 'ach', label: 'Acción contra el Hambre', file: 'ach-color.svg', whiteFile: '../invitaciones/ach-blanco.svg' },
-  { id: 'ops', label: 'OPS / OMS', file: 'ops-color.png', whiteFile: '../invitaciones/ops-blanco.png' },
+  { id: 'ops', label: 'OPS · Organización Panamericana de la Salud', file: '../invitaciones/ops-azul-20261111.svg', whiteFile: '../invitaciones/ops-blanco-20261111.svg' },
   { id: 'mspas', label: 'Ministerio de Salud Pública y Asistencia Social', file: 'mspas-color.png', whiteFile: 'mspas-blanco.png' },
 ];
 
