@@ -71,9 +71,9 @@ const BUILT_IN_LOGOS: Record<BuiltInLogo, Omit<RenderedLogo, 'id'>> = {
     kind: 'ach',
   },
   ops: {
-    name: 'OPS / OMS',
-    src: `${ASSETS}ops-blanco.png`,
-    alt: 'Organización Panamericana de la Salud y Organización Mundial de la Salud',
+    name: 'OPS · Organización Panamericana de la Salud',
+    src: `${ASSETS}ops-blanco-20261111.svg`,
+    alt: 'Organización Panamericana de la Salud',
     kind: 'ops',
   },
 };
