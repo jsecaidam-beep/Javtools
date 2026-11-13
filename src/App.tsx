@@ -16,6 +16,7 @@ import { RecruitmentEditor } from './components/RecruitmentEditor';
 import { InvitationEditor } from './components/InvitationEditor';
 import { NameplateEditor } from './components/NameplateEditor';
 import { PresentationsHub } from './components/PresentationsHub';
+import { SignEditor } from './components/SignEditor';
 import { ExportModal } from './components/ExportModal';
 import { FileCheck, Sparkles, ShieldCheck, HeartHandshake } from 'lucide-react';
 
@@ -30,6 +31,7 @@ const VIEW_HASHES: Record<NavView, string> = {
   invitations: 'invitaciones',
   nameplates: 'identificadores',
   presentations: 'presentaciones',
+  signs: 'rotulos',
 };
 
 const getViewFromHash = (): NavView => {
@@ -218,6 +220,7 @@ export default function App() {
 
         {currentView === 'invitations' && <InvitationEditor />}
         {currentView === 'nameplates' && <NameplateEditor />}
+        {currentView === 'signs' && <SignEditor />}
         {currentView === 'presentations' && <PresentationsHub />}
       </main>
 
