@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, ArrowUpRight, ArrowRight, Table2, BarChart3, BookOpen, FileCheck2, Mail, Sparkles, Star, X, Check, Command, ContactRound, Presentation } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowRight, Table2, BarChart3, BookOpen, FileCheck2, Mail, Sparkles, Star, X, Check, Command, ContactRound, Presentation, PanelsTopLeft } from 'lucide-react';
 import type { NavView } from './Navbar';
 
 type ToolView = Exclude<NavView,'home'>;
@@ -9,6 +9,7 @@ const tools: {id:ToolView;name:string;tag:string;desc:string;category:string;col
  {id:'recruitment',name:'Convocatorias',tag:'Talento que transforma vidas.',desc:'Guatemala y Honduras. Foto propia, logos adaptables y QR sin caducidad.',category:'Documentos',color:'mint',Icon:FileCheck2},
  {id:'invitations',name:'Invitaciones',tag:'De un evento a una invitación.',desc:'Fechas, lugares y personas. Todo en una pieza lista para compartir.',category:'Eventos',color:'mint',Icon:Mail},
  {id:'nameplates',name:'Identificadores',tag:'Cada persona, en su lugar.',desc:'Nombres y logos en dos caras. Carta horizontal para doblar, imprimir o descargar.',category:'Eventos',color:'sky',Icon:ContactRound},
+ {id:'signs',name:'Rótulos',tag:'Cada obra, con sus datos.',desc:'Edita textos, montos y cantidades, cambia los dos logos y muestra u oculta cada bloque.',category:'Documentos',color:'mint',Icon:PanelsTopLeft},
  {id:'covers',name:'Portadas',tag:'La primera impresión importa.',desc:'Dale a tus informes una entrada visual con la identidad de ACH.',category:'Documentos',color:'blue',Icon:BookOpen},
  {id:'charts',name:'Gráficas',tag:'Tus datos tienen algo que contar.',desc:'Convierte cifras en gráficas claras y llévalas a tus documentos.',category:'Datos',color:'peach',Icon:BarChart3},
  {id:'tables',name:'Tablas',tag:'Del dato al documento.',desc:'Edita, organiza y copia a Word o Excel con el formato preparado.',category:'Datos',color:'lilac',Icon:Table2},
@@ -16,6 +17,7 @@ const tools: {id:ToolView;name:string;tag:string;desc:string;category:string;col
 ];
 const MiniArtwork = ({type}:{type:ToolView}) => {
  if(type==='presentations')return <div className="mini-paper invite-paper"><div className="paper-kicker">PRESENTACIONES / ACH</div><h4>Mejoramientos.<br/>Cambios que<br/>se ven.</h4><div className="invite-name">ANTES → AVANCES</div><div className="paper-bottom">AUTOMÁTICA · PANTALLA COMPLETA</div></div>;
+ if(type==='signs')return <div className="mini-paper" style={{background:'linear-gradient(115deg,#005fb6,#52ae32)',color:'white',minHeight:245,display:'flex',flexDirection:'column',gap:9}}><div className="paper-kicker" style={{color:'white'}}><span style={{background:'#52ae32',padding:'3px 5px'}}>MEJORA SANITARIA</span></div><h4 style={{color:'white',margin:'5px 0',fontSize:20}}>CENTRO<br/>DE SALUD</h4><div style={{background:'#ffffffed',color:'#005fb6',borderRadius:7,padding:'8px 6px',display:'flex',justifyContent:'space-around',fontWeight:700,fontSize:13}}><span>560<small style={{display:'block',fontSize:5}}>Familias</small></span><span>2,820<small style={{display:'block',fontSize:5}}>Habitantes</small></span></div><div style={{background:'#ffffffed',color:'#005fb6',borderRadius:7,padding:7,fontWeight:700,fontSize:10}}>Q. 127,611.00</div><div style={{fontWeight:700,fontSize:8,marginTop:4}}>FHG <span style={{fontSize:6,float:'right'}}>ACCIÓN CONTRA EL HAMBRE</span></div><div style={{fontWeight:700,fontSize:11,textAlign:'center',marginTop:'auto'}}>POR LA SALUD<br/>Y EL BIENESTAR<br/>DE TU FAMILIA</div></div>;
  if(type==='nameplates')return <div className="mini-paper invite-paper"><div className="paper-kicker">IDENTIFICADOR DE MESA</div><h4>Nombre<br/>y apellido.</h4><div className="invite-name">INSTITUCIÓN / CARGO</div><div className="paper-bottom">CARTA HORIZONTAL · DOS CARAS · LOGOS</div></div>;
  if(type==='stories')return <div className="mini-paper invite-paper"><div className="paper-kicker">HISTORIAS / 9:16</div><h4>Historias<br/>que mueven<br/>el mundo.</h4><div className="invite-name">FOTO + VIDEO + MOVIMIENTO</div><div className="paper-bottom">4 MARCOS · TU PROYECTO · ACH</div></div>;
  if(type==='recruitment')return <div className="mini-paper invite-paper"><div className="paper-kicker">CONVOCATORIA ABIERTA / ACH</div><h4>Tu talento.<br/>Nuestro próximo<br/>gran cambio.</h4><div className="invite-name">GUATEMALA + HONDURAS ↗</div><div className="paper-bottom">FOTO · LOGOS · QR · IA LOCAL</div></div>;
