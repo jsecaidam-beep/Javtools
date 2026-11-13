@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, ArrowUpRight, ArrowRight, Table2, BarChart3, BookOpen, FileCheck2, Mail, Sparkles, Star, X, Check, Command, ContactRound } from 'lucide-react';
+import { Search, ArrowUpRight, ArrowRight, Table2, BarChart3, BookOpen, FileCheck2, Mail, Sparkles, Star, X, Check, Command, ContactRound, Presentation } from 'lucide-react';
 import type { NavView } from './Navbar';
 
 type ToolView = Exclude<NavView,'home'>;
 const tools: {id:ToolView;name:string;tag:string;desc:string;category:string;color:string;Icon:typeof Mail}[] = [
+ {id:'presentations',name:'Presentaciones',tag:'Los avances, en pantalla.',desc:'Mejoramientos: registro inicial, avances y reproducción automática para proyectar.',category:'Eventos',color:'sky',Icon:Presentation},
  {id:'stories',name:'Historias',tag:'Tu proyecto, en movimiento.',desc:'Foto o video, cuatro marcos, logos adaptables y flotación suave.',category:'Eventos',color:'lilac',Icon:Sparkles},
  {id:'recruitment',name:'Convocatorias',tag:'Talento que transforma vidas.',desc:'Guatemala y Honduras. Foto propia, logos adaptables y QR sin caducidad.',category:'Documentos',color:'mint',Icon:FileCheck2},
  {id:'invitations',name:'Invitaciones',tag:'De un evento a una invitación.',desc:'Fechas, lugares y personas. Todo en una pieza lista para compartir.',category:'Eventos',color:'mint',Icon:Mail},
@@ -14,6 +15,7 @@ const tools: {id:ToolView;name:string;tag:string;desc:string;category:string;col
  {id:'credits',name:'Créditos',tag:'Cada contribución, en su lugar.',desc:'Completa tus publicaciones con créditos, contactos y atribuciones.',category:'Documentos',color:'sky',Icon:FileCheck2},
 ];
 const MiniArtwork = ({type}:{type:ToolView}) => {
+ if(type==='presentations')return <div className="mini-paper invite-paper"><div className="paper-kicker">PRESENTACIONES / ACH</div><h4>Mejoramientos.<br/>Cambios que<br/>se ven.</h4><div className="invite-name">ANTES → AVANCES</div><div className="paper-bottom">AUTOMÁTICA · PANTALLA COMPLETA</div></div>;
  if(type==='nameplates')return <div className="mini-paper invite-paper"><div className="paper-kicker">IDENTIFICADOR DE MESA</div><h4>Nombre<br/>y apellido.</h4><div className="invite-name">INSTITUCIÓN / CARGO</div><div className="paper-bottom">CARTA HORIZONTAL · DOS CARAS · LOGOS</div></div>;
  if(type==='stories')return <div className="mini-paper invite-paper"><div className="paper-kicker">HISTORIAS / 9:16</div><h4>Historias<br/>que mueven<br/>el mundo.</h4><div className="invite-name">FOTO + VIDEO + MOVIMIENTO</div><div className="paper-bottom">4 MARCOS · TU PROYECTO · ACH</div></div>;
  if(type==='recruitment')return <div className="mini-paper invite-paper"><div className="paper-kicker">CONVOCATORIA ABIERTA / ACH</div><h4>Tu talento.<br/>Nuestro próximo<br/>gran cambio.</h4><div className="invite-name">GUATEMALA + HONDURAS ↗</div><div className="paper-bottom">FOTO · LOGOS · QR · IA LOCAL</div></div>;
