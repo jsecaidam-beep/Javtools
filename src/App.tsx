@@ -15,6 +15,7 @@ import { StoriesEditor } from './components/StoriesEditor';
 import { RecruitmentEditor } from './components/RecruitmentEditor';
 import { InvitationEditor } from './components/InvitationEditor';
 import { NameplateEditor } from './components/NameplateEditor';
+import { PresentationsHub } from './components/PresentationsHub';
 import { ExportModal } from './components/ExportModal';
 import { FileCheck, Sparkles, ShieldCheck, HeartHandshake } from 'lucide-react';
 
@@ -28,6 +29,7 @@ const VIEW_HASHES: Record<NavView, string> = {
   credits: 'creditos',
   invitations: 'invitaciones',
   nameplates: 'identificadores',
+  presentations: 'presentaciones',
 };
 
 const getViewFromHash = (): NavView => {
@@ -216,6 +218,7 @@ export default function App() {
 
         {currentView === 'invitations' && <InvitationEditor />}
         {currentView === 'nameplates' && <NameplateEditor />}
+        {currentView === 'presentations' && <PresentationsHub />}
       </main>
 
       <footer className="studio-footer"><button onClick={()=>handleNavigate('home')} className="footer-brand">javtools</button><p>Pequeñas herramientas.<br/>Más espacio para tus ideas.</p><span>Creado para comunicar con identidad ACH.<br/><small>Prototipo local · Diseño para revisión</small></span></footer>
